@@ -81,6 +81,41 @@ class Cart extends Model
         return (float) $this->items->sum(fn (CartItem $item): float => $item->lineTotalUsd());
     }
 
+    public function eligibleSubtotalUsd(Coupon $coupon): float
+    {
+        return (float) $this->items->sum(
+            fn (CartItem $item): float => $coupon->applicableTo($item->plan)
+                ? $item->lineTotalUsd()
+                : 0.0,
+        );
+    }
+
+    public function couponDiscountUsd(Coupon $coupon): float
+    {
+        return $coupon->discountUsd($this->eligibleSubtotalUsd($coupon));
+    }
+
+    public function totalUsd(?Coupon $coupon = null): float
+    {
+        $total = $this->subtotalUsd();
+
+        if ($coupon !== null) {
+            $total -= $this->couponDiscountUsd($coupon);
+        }
+
+        return round(max(0, $total), 2);
+    }
+
+    public function couponDiscountIn(Coupon $coupon, DisplayCurrency $currency): float
+    {
+        return ExchangeRate::convert($this->couponDiscountUsd($coupon), $currency);
+    }
+
+    public function totalIn(DisplayCurrency $currency, ?Coupon $coupon = null): float
+    {
+        return ExchangeRate::convert($this->totalUsd($coupon), $currency);
+    }
+
     public function subtotalIn(DisplayCurrency $currency): float
     {
         return ExchangeRate::convert($this->subtotalUsd(), $currency);

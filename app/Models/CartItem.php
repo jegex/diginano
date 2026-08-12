@@ -51,6 +51,6 @@ class CartItem extends Model
 
     public function lineTotalUsd(): float
     {
-        return $this->quantity * (float) $this->plan->price;
+        return $this->quantity * $this->plan->effectivePriceUsd();
     }
 }

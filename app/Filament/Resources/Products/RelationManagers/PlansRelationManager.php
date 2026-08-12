@@ -9,6 +9,7 @@ use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -39,6 +40,20 @@ class PlansRelationManager extends RelationManager
                     ->minValue(0)
                     ->required()
                     ->prefix('$'),
+                TextInput::make('sale_price')
+                    ->label('Sale price (USD)')
+                    ->numeric()
+                    ->minValue(0)
+                    ->prefix('$')
+                    ->requiredWith('sale_starts_at')
+                    ->requiredWith('sale_ends_at'),
+                DateTimePicker::make('sale_starts_at')
+                    ->label('Sale starts at')
+                    ->native(false),
+                DateTimePicker::make('sale_ends_at')
+                    ->label('Sale ends at')
+                    ->native(false)
+                    ->after('sale_starts_at'),
                 Select::make('billing_period')
                     ->label('Billing period')
                     ->options(BillingPeriod::class)
@@ -65,6 +80,10 @@ class PlansRelationManager extends RelationManager
                 TextColumn::make('price')
                     ->money('USD')
                     ->sortable(),
+                TextColumn::make('sale_price')
+                    ->label('Sale price')
+                    ->money('USD')
+                    ->placeholder('—'),
                 TextColumn::make('billing_period')
                     ->placeholder('—'),
                 TextColumn::make('licenses_per_unit')

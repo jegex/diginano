@@ -40,4 +40,18 @@ class PlanFactory extends Factory
             'billing_period' => $period,
         ]);
     }
+
+    /**
+     * Put the plan on an active sale.
+     *
+     * @param  array<string, mixed>  $overrides
+     */
+    public function onSale(array $overrides = []): static
+    {
+        return $this->state(fn (array $attributes) => array_merge([
+            'sale_price' => (float) $attributes['price'] * 0.8,
+            'sale_starts_at' => now()->subDay(),
+            'sale_ends_at' => now()->addDay(),
+        ], $overrides));
+    }
 }

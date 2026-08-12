@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\DisplayCurrency;
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\Coupon;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
@@ -14,6 +15,10 @@ use Livewire\Component;
 class CartPage extends Component
 {
     public string $currency = DisplayCurrency::Usd->value;
+
+    public ?string $couponCode = null;
+
+    public ?int $couponId = null;
 
     /** @var array<int, int> */
     public array $quantities = [];
@@ -64,13 +69,42 @@ class CartPage extends Component
         unset($this->quantities[$itemId]);
     }
 
+    public function applyCoupon(): void
+    {
+        abort_unless(auth()->check(), 403);
+
+        $this->validate([
+            'couponCode' => ['required', 'string', 'max:50'],
+        ]);
+
+        $coupon = Coupon::query()->where('code', strtoupper($this->couponCode))->first();
+
+        if ($coupon === null) {
+            $this->addError('couponCode', 'Kode kupon tidak ditemukan.');
+
+            return;
+        }
+
+        $this->couponId = $coupon->id;
+    }
+
+    public function removeCoupon(): void
+    {
+        abort_unless(auth()->check(), 403);
+
+        $this->couponId = null;
+        $this->couponCode = null;
+    }
+
     public function render(): View
     {
         $user = auth()->user();
         $cart = $user !== null ? Cart::for($user)->load('items.plan.product') : null;
+        $coupon = $this->couponId !== null ? Coupon::find($this->couponId) : null;
 
         return view('livewire.cart-page', [
             'cart' => $cart,
+            'coupon' => $coupon,
             'currencies' => DisplayCurrency::cases(),
         ]);
     }

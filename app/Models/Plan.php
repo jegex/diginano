@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -16,12 +17,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $name
  * @property PlanPricing $pricing_mode
  * @property string $price
+ * @property string|null $sale_price
+ * @property Carbon|null $sale_starts_at
+ * @property Carbon|null $sale_ends_at
  * @property BillingPeriod|null $billing_period
  * @property int $licenses_per_unit
  *
  * @method static PlanFactory factory()
  */
-#[Fillable(['product_id', 'name', 'pricing_mode', 'price', 'billing_period', 'licenses_per_unit'])]
+#[Fillable(['product_id', 'name', 'pricing_mode', 'price', 'sale_price', 'sale_starts_at', 'sale_ends_at', 'billing_period', 'licenses_per_unit'])]
 class Plan extends Model
 {
     /** @use HasFactory<PlanFactory> */
@@ -36,6 +40,9 @@ class Plan extends Model
             'pricing_mode' => PlanPricing::class,
             'billing_period' => BillingPeriod::class,
             'price' => 'decimal:2',
+            'sale_price' => 'decimal:2',
+            'sale_starts_at' => 'datetime',
+            'sale_ends_at' => 'datetime',
             'licenses_per_unit' => 'integer',
         ];
     }
@@ -56,5 +63,29 @@ class Plan extends Model
             BillingPeriod::Yearly => 'tahun',
             default => 'periode',
         };
+    }
+
+    public function isOnSale(?Carbon $now = null): bool
+    {
+        if ($this->sale_price === null) {
+            return false;
+        }
+
+        $now ??= now();
+
+        if ($this->sale_starts_at !== null && $this->sale_starts_at->gt($now)) {
+            return false;
+        }
+
+        if ($this->sale_ends_at !== null && $this->sale_ends_at->lt($now)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function effectivePriceUsd(): float
+    {
+        return $this->isOnSale() ? (float) $this->sale_price : (float) $this->price;
     }
 }

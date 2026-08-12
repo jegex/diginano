@@ -23,7 +23,12 @@
                         <div class="flex items-baseline justify-between gap-4">
                             <h3 class="font-semibold">{{ $plan->name }}</h3>
                             <p class="text-lg font-semibold">
-                                {{ $currency->format(\App\Models\ExchangeRate::convert((float) $plan->price, $currency)) }}
+                                @if ($plan->isOnSale())
+                                    <span class="mr-2 text-sm text-gray-400 line-through">
+                                        {{ $currency->format(\App\Models\ExchangeRate::convert((float) $plan->price, $currency)) }}
+                                    </span>
+                                @endif
+                                {{ $currency->format(\App\Models\ExchangeRate::convert($plan->effectivePriceUsd(), $currency)) }}
                             </p>
                         </div>
                         <p class="mt-1 text-sm text-gray-500">
