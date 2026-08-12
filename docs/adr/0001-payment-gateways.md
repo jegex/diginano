@@ -1,0 +1,3 @@
+# Payment gateways: manual bank transfer + Midtrans + Cryptomus
+
+A global digital-product store that settles via manual bank transfer (IDR, proof-of-payment approval), Midtrans (Indonesian online payments), and Cryptomus (crypto), with no Stripe or merchant-of-record. The trade-off: the target market is Indonesia plus crypto-friendly global buyers, so these three channels cover it at the lowest integration cost. A merchant-of-record (Paddle/LemonSqueezy) was rejected for MVP — they simplify tax but take a larger cut and lock settlement; revisit only if tax compliance forces it. Gateways sit behind a common PaymentMethod abstraction, so adding another gateway stays cheap.
