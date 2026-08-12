@@ -1,4 +1,6 @@
 <div>
+    @php($currency = auth()->user()?->display_currency ?? \App\DisplayCurrency::Usd)
+
     <nav class="text-sm text-gray-500">
         <a href="{{ route('catalog') }}" class="hover:text-gray-900">Katalog</a>
         <span class="mx-2">/</span>
@@ -20,7 +22,9 @@
                     <div class="rounded-xl border border-gray-200 p-5">
                         <div class="flex items-baseline justify-between gap-4">
                             <h3 class="font-semibold">{{ $plan->name }}</h3>
-                            <p class="text-lg font-semibold">${{ number_format($plan->price, 2) }}</p>
+                            <p class="text-lg font-semibold">
+                                {{ $currency->format(\App\Models\ExchangeRate::convert((float) $plan->price, $currency)) }}
+                            </p>
                         </div>
                         <p class="mt-1 text-sm text-gray-500">
                             @if ($plan->pricing_mode === \App\PlanPricing::Subscription)
@@ -32,6 +36,26 @@
                         <p class="mt-1 text-sm text-gray-500">
                             {{ $plan->licenses_per_unit }} lisensi per unit
                         </p>
+                        <div class="mt-4 flex items-center gap-3">
+                            <input
+                                type="number"
+                                min="1"
+                                value="1"
+                                wire:model="quantities.{{ $plan->id }}"
+                                class="w-20 rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                                aria-label="Jumlah untuk {{ $plan->name }}"
+                            >
+                            <button
+                                type="button"
+                                wire:click="addToCart({{ $plan->id }})"
+                                class="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-gray-700"
+                            >
+                                Tambah ke keranjang
+                            </button>
+                            @error("quantities.{$plan->id}")
+                                <span class="text-sm text-red-600">{{ $message }}</span>
+                            @enderror
+                        </div>
                     </div>
                 @endforeach
             </div>

@@ -16,7 +16,9 @@
                         {{ config('app.name', 'Diginano') }}
                     </a>
                     <nav class="flex items-center gap-4 text-sm text-gray-600">
+                        @php($cartCount = auth()->check() ? \App\Models\Cart::for(auth()->user())->totalQuantity() : 0)
                         <a href="{{ route('catalog') }}" class="hover:text-gray-900">Katalog</a>
+                        <a href="{{ route('cart') }}" class="hover:text-gray-900">Keranjang{{ $cartCount > 0 ? " ($cartCount)" : '' }}</a>
                         <a href="{{ route('filament.admin.auth.login') }}" class="hover:text-gray-900">Masuk</a>
                     </nav>
                 </div>
