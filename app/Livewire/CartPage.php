@@ -35,6 +35,17 @@ class CartPage extends Component
         $this->quantities = $this->cart()->items->mapWithKeys(
             fn (CartItem $item): array => [$item->id => $item->quantity],
         )->all();
+
+        $couponCode = session('applied_coupon_code');
+
+        if ($couponCode !== null) {
+            $coupon = Coupon::query()->where('code', $couponCode)->first();
+
+            if ($coupon !== null) {
+                $this->couponId = $coupon->id;
+                $this->couponCode = $coupon->code;
+            }
+        }
     }
 
     public function changeCurrency(): void
@@ -86,6 +97,7 @@ class CartPage extends Component
         }
 
         $this->couponId = $coupon->id;
+        session(['applied_coupon_code' => $coupon->code]);
     }
 
     public function removeCoupon(): void
@@ -94,6 +106,7 @@ class CartPage extends Component
 
         $this->couponId = null;
         $this->couponCode = null;
+        session()->forget('applied_coupon_code');
     }
 
     public function render(): View

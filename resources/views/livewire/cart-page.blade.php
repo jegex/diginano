@@ -115,6 +115,12 @@
                             {{ $cart->displayCurrency()->format($cart->totalIn($cart->displayCurrency(), $coupon)) }}
                         </p>
                     @endif
+                    <a
+                        href="{{ route('checkout') }}"
+                        class="mt-5 inline-block rounded-lg bg-gray-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-gray-700"
+                    >
+                        Checkout
+                    </a>
                 </div>
             </div>
         @endif

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\DisplayCurrency;
 use Database\Factories\CartItemFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -52,5 +53,10 @@ class CartItem extends Model
     public function lineTotalUsd(): float
     {
         return $this->quantity * $this->plan->effectivePriceUsd();
+    }
+
+    public function lineTotalIn(DisplayCurrency $currency): float
+    {
+        return ExchangeRate::convert($this->lineTotalUsd(), $currency);
     }
 }

@@ -1,0 +1,24 @@
+<?php
+
+namespace App\Filament\Resources\Customers\Schemas;
+
+use Filament\Infolists\Components\TextEntry;
+use Filament\Schemas\Schema;
+
+class CustomerInfolist
+{
+    public static function configure(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                TextEntry::make('name'),
+                TextEntry::make('email'),
+                TextEntry::make('display_currency')
+                    ->label('Display Currency'),
+                TextEntry::make('created_at')
+                    ->label('Registered')
+                    ->dateTime(),
+            ])
+            ->columns(2);
+    }
+}
