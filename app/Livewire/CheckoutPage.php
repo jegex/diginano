@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\DisplayCurrency;
+use App\Livewire\Concerns\HandlesPaymentRedirect;
 use App\Models\Cart;
 use App\Models\Coupon;
 use App\Models\Order;
@@ -15,6 +16,8 @@ use Livewire\Component;
 #[Layout('layouts.app')]
 class CheckoutPage extends Component
 {
+    use HandlesPaymentRedirect;
+
     public string $currency = DisplayCurrency::Usd->value;
 
     public ?int $paymentMethodId = null;
@@ -63,7 +66,7 @@ class CheckoutPage extends Component
 
         session()->forget('applied_coupon_code');
 
-        $this->redirectRoute('orders.show', $order);
+        $this->redirectForPayment($order, $paymentMethod);
     }
 
     public function render(): View
