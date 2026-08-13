@@ -29,9 +29,9 @@ function makeOrder(User $user, array $plans = []): Order
     return Order::checkout($cart, $method);
 }
 
-it('completes an order and issues licenses equal to quantity times licenses_per_unit', function () {
+it('completes an order and issues one license per purchased unit', function () {
     $user = User::factory()->create();
-    $plan = Plan::factory()->create(['price' => 100, 'licenses_per_unit' => 2]);
+    $plan = Plan::factory()->priced(100)->create();
     $order = makeOrder($user, [[$plan, 3]]);
 
     app(OrderFinalizer::class)->finalize($order);
@@ -40,9 +40,9 @@ it('completes an order and issues licenses equal to quantity times licenses_per_
 
     expect($order->status)->toBe(OrderStatus::Completed)
         ->and($order->completed_at)->not->toBeNull()
-        ->and($order->licenses)->toHaveCount(6)
+        ->and($order->licenses)->toHaveCount(3)
         ->and($order->licenses->pluck('user_id')->unique())->each->toBe($user->id)
-        ->and($order->licenses->pluck('key')->unique())->toHaveCount(6);
+        ->and($order->licenses->pluck('key')->unique())->toHaveCount(3);
 });
 
 it('creates a subscription for each subscription-plan item', function () {

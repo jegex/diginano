@@ -18,11 +18,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $quantity
  * @property float $unit_price
  * @property float $line_total
- * @property int $licenses_per_unit
+ * @property float|null $setup_fee
  *
  * @method static OrderItemFactory factory()
  */
-#[Fillable(['order_id', 'plan_id', 'product_id', 'name', 'quantity', 'unit_price', 'line_total', 'licenses_per_unit'])]
+#[Fillable(['order_id', 'plan_id', 'product_id', 'name', 'quantity', 'unit_price', 'line_total', 'setup_fee'])]
 class OrderItem extends Model
 {
     /** @use HasFactory<OrderItemFactory> */
@@ -37,7 +37,7 @@ class OrderItem extends Model
             'quantity' => 'integer',
             'unit_price' => MoneyCast::class,
             'line_total' => MoneyCast::class,
-            'licenses_per_unit' => 'integer',
+            'setup_fee' => MoneyCast::class,
         ];
     }
 

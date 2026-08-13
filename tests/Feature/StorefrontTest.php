@@ -41,7 +41,7 @@ it('shows an empty state when no products exist', function () {
 
 it('shows the product detail', function () {
     $product = Product::factory()->create(['description' => 'Deskripsi lengkap produk']);
-    $plan = Plan::factory()->for($product)->create(['name' => 'Lifetime', 'price' => 99.5]);
+    $plan = Plan::factory()->priced(99.5)->for($product)->create(['name' => 'Lifetime']);
 
     Livewire::test(ProductDetail::class, ['product' => $product])
         ->assertOk()

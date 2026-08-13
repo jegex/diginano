@@ -5,7 +5,10 @@ namespace App\Models;
 use App\Casts\MoneyCast;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethodType;
+use App\Services\OrderFinalizer;
+use App\Services\PriceCalculator;
 use Database\Factories\OrderFactory;
+use DomainException;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -122,6 +125,8 @@ class Order extends Model
         abort_if($cart->isEmpty(), 422, 'Keranjang kosong, tidak bisa checkout.');
         abort_if($cart->user_id !== auth()->id(), 403);
 
+        static::assertValidCartAmounts($cart);
+
         $currency = Currency::required($cart->user->display_currency);
         $rate = $currency->rate();
 
@@ -146,17 +151,9 @@ class Order extends Model
                 'payment_method_id' => $paymentMethod->id,
             ]);
 
-            $items = $cart->items->map(fn (CartItem $item): array => [
-                'plan_id' => $item->plan_id,
-                'product_id' => $item->plan->product_id,
-                'name' => $item->plan->name,
-                'quantity' => $item->quantity,
-                'unit_price' => $item->plan->effectivePriceUsd(),
-                'line_total' => $item->lineTotalUsd(),
-                'licenses_per_unit' => $item->plan->licenses_per_unit,
-            ])->all();
-
-            $order->items()->createMany($items);
+            $order->items()->createMany(
+                $cart->items->map(fn (CartItem $item): array => static::itemSnapshot($item))->all(),
+            );
             $cart->items()->delete();
 
             return $order;
@@ -164,8 +161,45 @@ class Order extends Model
     }
 
     /**
+     * Complete a zero-value order (lead magnets, free checkout) without a
+     * payment method, finalizing it immediately.
+     */
+    public static function freeCheckout(Cart $cart): self
+    {
+        abort_if($cart->isEmpty(), 422, 'Keranjang kosong, tidak bisa checkout.');
+        abort_if($cart->user_id !== auth()->id(), 403);
+        abort_if($cart->totalUsd() > 0, 422, 'Pesanan gratis hanya untuk keranjang bernilai nol.');
+
+        static::assertValidCartAmounts($cart);
+
+        return DB::transaction(function () use ($cart): self {
+            /** @var self $order */
+            $order = static::query()->create([
+                'number' => static::nextNumber(),
+                'user_id' => $cart->user_id,
+                'status' => OrderStatus::Pending,
+                'subtotal' => $cart->subtotalUsd(),
+                'discount' => 0,
+                'total' => 0,
+                'currency' => Currency::default()->code,
+                'exchange_rate' => 1,
+            ]);
+
+            $order->items()->createMany(
+                $cart->items->map(fn (CartItem $item): array => static::itemSnapshot($item))->all(),
+            );
+            $cart->items()->delete();
+
+            resolve(OrderFinalizer::class)->finalize($order);
+
+            return $order;
+        });
+    }
+
+    /**
      * Create a single-item renewal Order for a Subscription at full price,
-     * with no Coupon and no Sale applied.
+     * with no Coupon and no setup fee. Metered subscriptions are billed on the
+     * usage aggregated since the current period started.
      */
     public static function renewal(Subscription $subscription, PaymentMethod $paymentMethod): self
     {
@@ -173,6 +207,20 @@ class Order extends Model
         abort_if($subscription->user_id !== auth()->id(), 403);
 
         $plan = $subscription->plan;
+        $price = $plan->price;
+
+        if ($price === null) {
+            throw new DomainException('Plan tidak memiliki harga.');
+        }
+
+        $calculator = resolve(PriceCalculator::class);
+        $quantity = $calculator->renewalQuantity($subscription);
+        $charge = $calculator->calculate($price, $quantity, includeSetupFee: false);
+
+        if ($charge['line_total'] <= 0) {
+            throw new DomainException('Tidak ada pemakaian pada periode ini yang bisa ditagihkan.');
+        }
+
         $currency = Currency::required($subscription->user->display_currency);
         $rate = $currency->rate();
 
@@ -180,15 +228,15 @@ class Order extends Model
         $settlementCurrency = $paymentMethod->settlementCurrency();
         $settlementRate = $settlementCurrency->rate();
 
-        return DB::transaction(function () use ($subscription, $paymentMethod, $plan, $currency, $rate, $isManual, $settlementCurrency, $settlementRate): self {
+        return DB::transaction(function () use ($subscription, $paymentMethod, $plan, $charge, $quantity, $currency, $rate, $isManual, $settlementCurrency, $settlementRate): self {
             /** @var self $order */
             $order = static::query()->create([
                 'number' => static::nextNumber(),
                 'user_id' => $subscription->user_id,
                 'status' => $isManual ? OrderStatus::AwaitingConfirmation : OrderStatus::Pending,
-                'subtotal' => $plan->price,
+                'subtotal' => $charge['line_total'],
                 'discount' => 0,
-                'total' => $plan->price,
+                'total' => $charge['line_total'],
                 'currency' => $currency->code,
                 'exchange_rate' => $rate,
                 'settlement_currency' => $settlementCurrency->code,
@@ -201,14 +249,39 @@ class Order extends Model
                 'plan_id' => $plan->id,
                 'product_id' => $plan->product_id,
                 'name' => $plan->name,
-                'quantity' => 1,
-                'unit_price' => $plan->price,
-                'line_total' => $plan->price,
-                'licenses_per_unit' => $plan->licenses_per_unit,
+                'quantity' => $quantity,
+                'unit_price' => $charge['unit_price'],
+                'line_total' => $charge['line_total'],
+                'setup_fee' => 0,
             ]);
 
             return $order;
         });
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function itemSnapshot(CartItem $item): array
+    {
+        return [
+            'plan_id' => $item->plan_id,
+            'product_id' => $item->plan->product_id,
+            'name' => $item->plan->name,
+            'quantity' => $item->quantity,
+            'unit_price' => $item->unitPriceUsd(),
+            'line_total' => $item->lineTotalUsd(),
+            'setup_fee' => $item->setupFeeUsd(),
+        ];
+    }
+
+    private static function assertValidCartAmounts(Cart $cart): void
+    {
+        foreach ($cart->items as $item) {
+            if ($item->plan->isPwyw() && $item->amountUsd() < $item->minAmountUsd()) {
+                abort(422, "Nominal untuk {$item->plan->name} di bawah harga minimum.");
+            }
+        }
     }
 
     public function isPaid(): bool

@@ -37,7 +37,7 @@ function midtransSignature(string $orderId, string $statusCode, string $grossAmo
 
 it('redirects to the Snap hosted page after checkout and stores the token', function () {
     $user = User::factory()->create();
-    $plan = Plan::factory()->create(['price' => 100]);
+    $plan = Plan::factory()->priced(100)->create();
     $method = PaymentMethod::factory()->midtrans()->create();
     seedCurrencies();
     Cart::for($user)->add($plan, 1);
@@ -76,7 +76,7 @@ it('redirects to the Snap hosted page after checkout and stores the token', func
 
 it('lets the customer reopen the Snap checkout from the receipt', function () {
     $user = User::factory()->create();
-    $plan = Plan::factory()->create(['price' => 100]);
+    $plan = Plan::factory()->priced(100)->create();
     $order = makeMidtransOrder($user, [[$plan, 1]]);
 
     Http::fake([
@@ -99,7 +99,7 @@ it('lets the customer reopen the Snap checkout from the receipt', function () {
 
 it('completes a pending order when Midtrans sends a verified settlement notification', function () {
     $user = User::factory()->create();
-    $plan = Plan::factory()->create(['price' => 100, 'licenses_per_unit' => 2]);
+    $plan = Plan::factory()->priced(100)->create();
     $order = makeMidtransOrder($user, [[$plan, 1]]);
     $payload = [
         'order_id' => $order->number,
@@ -119,12 +119,12 @@ it('completes a pending order when Midtrans sends a verified settlement notifica
         ->and($order->provider_reference)->toBe('txn-123')
         ->and($order->provider_status)->toBe('settlement')
         ->and($order->payment_type)->toBe('gopay')
-        ->and($order->licenses)->toHaveCount(2);
+        ->and($order->licenses)->toHaveCount(1);
 });
 
 it('is idempotent when Midtrans replays a settlement notification', function () {
     $user = User::factory()->create();
-    $plan = Plan::factory()->create(['price' => 100, 'licenses_per_unit' => 2]);
+    $plan = Plan::factory()->priced(100)->create();
     $order = makeMidtransOrder($user, [[$plan, 1]]);
     $payload = [
         'order_id' => $order->number,
@@ -142,12 +142,12 @@ it('is idempotent when Midtrans replays a settlement notification', function () 
     $order->refresh();
 
     expect($order->status)->toBe(OrderStatus::Completed)
-        ->and($order->licenses)->toHaveCount(2);
+        ->and($order->licenses)->toHaveCount(1);
 });
 
 it('rejects a notification with an invalid signature', function () {
     $user = User::factory()->create();
-    $plan = Plan::factory()->create(['price' => 100]);
+    $plan = Plan::factory()->priced(100)->create();
     $order = makeMidtransOrder($user, [[$plan, 1]]);
     $payload = [
         'order_id' => $order->number,
@@ -165,7 +165,7 @@ it('rejects a notification with an invalid signature', function () {
 
 it('completes a capture with fraud status accept but leaves challenge pending', function () {
     $user = User::factory()->create();
-    $plan = Plan::factory()->create(['price' => 100]);
+    $plan = Plan::factory()->priced(100)->create();
 
     $acceptedOrder = makeMidtransOrder($user, [[$plan, 1]]);
     $accepted = [
@@ -198,7 +198,7 @@ it('completes a capture with fraud status accept but leaves challenge pending', 
 
 it('cancels the order on deny, cancel, expire, or failure notifications', function (string $status) {
     $user = User::factory()->create();
-    $plan = Plan::factory()->create(['price' => 100]);
+    $plan = Plan::factory()->priced(100)->create();
     $order = makeMidtransOrder($user, [[$plan, 1]]);
     $payload = [
         'order_id' => $order->number,
@@ -233,7 +233,7 @@ it('ignores notifications for non-midtrans orders', function () {
     $cart = Cart::for($user);
     $method = PaymentMethod::factory()->manual()->create();
     seedCurrencies();
-    $cart->add(Plan::factory()->create(['price' => 100]), 1);
+    $cart->add(Plan::factory()->priced(100)->create(), 1);
     $order = Order::checkout($cart, $method);
     $payload = [
         'order_id' => $order->number,

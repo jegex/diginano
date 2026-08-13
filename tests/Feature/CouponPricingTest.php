@@ -5,13 +5,14 @@ use App\Livewire\CartPage;
 use App\Models\Cart;
 use App\Models\Coupon;
 use App\Models\Plan;
+use App\Models\Price;
 use App\Models\Product;
 use App\Models\User;
 use Livewire\Livewire;
 
 it('applies a global percentage coupon to the order total', function () {
     $coupon = Coupon::factory()->percentage()->create(['value' => 10]);
-    $plan = Plan::factory()->create(['price' => 100]);
+    $plan = Plan::factory()->priced(100)->create();
     $cart = Cart::for(User::factory()->create());
     $cart->add($plan, 2);
 
@@ -20,7 +21,7 @@ it('applies a global percentage coupon to the order total', function () {
 
 it('applies a global fixed coupon to the order total', function () {
     $coupon = Coupon::factory()->fixed()->create(['fixed_value' => 25]);
-    $plan = Plan::factory()->create(['price' => 100]);
+    $plan = Plan::factory()->priced(100)->create();
     $cart = Cart::for(User::factory()->create());
     $cart->add($plan, 1);
 
@@ -29,7 +30,7 @@ it('applies a global fixed coupon to the order total', function () {
 
 it('does not let a fixed coupon exceed the eligible subtotal', function () {
     $coupon = Coupon::factory()->fixed()->create(['fixed_value' => 500]);
-    $plan = Plan::factory()->create(['price' => 100]);
+    $plan = Plan::factory()->priced(100)->create();
     $cart = Cart::for(User::factory()->create());
     $cart->add($plan, 1);
 
@@ -39,8 +40,8 @@ it('does not let a fixed coupon exceed the eligible subtotal', function () {
 
 it('applies a product-scoped coupon only to eligible items', function () {
     $eligibleProduct = Product::factory()->create();
-    $plan = Plan::factory()->create(['product_id' => $eligibleProduct->id, 'price' => 100]);
-    $other = Plan::factory()->create(['price' => 100]);
+    $plan = Plan::factory()->priced(100)->create(['product_id' => $eligibleProduct->id]);
+    $other = Plan::factory()->priced(100)->create();
     $coupon = Coupon::factory()->percentage()->create(['value' => 10]);
     $coupon->products()->attach($eligibleProduct);
 
@@ -56,7 +57,7 @@ it('applies a product-scoped coupon only to eligible items', function () {
 it('applies no discount when a product-scoped coupon matches nothing', function () {
     $coupon = Coupon::factory()->percentage()->create(['value' => 10]);
     $coupon->products()->attach(Product::factory()->create());
-    $plan = Plan::factory()->create(['price' => 100]);
+    $plan = Plan::factory()->priced(100)->create();
     $cart = Cart::for(User::factory()->create());
     $cart->add($plan, 1);
 
@@ -65,7 +66,7 @@ it('applies no discount when a product-scoped coupon matches nothing', function 
 });
 
 it('returns the plain subtotal when no coupon is applied', function () {
-    $plan = Plan::factory()->create(['price' => 100]);
+    $plan = Plan::factory()->priced(100)->create();
     $cart = Cart::for(User::factory()->create());
     $cart->add($plan, 2);
 
@@ -91,24 +92,19 @@ it('tracks a single-use coupon as used by a customer', function () {
     expect($coupon->usages()->where('user_id', $user->id)->exists())->toBeTrue();
 });
 
-it('combines an active sale with a coupon', function () {
-    $plan = Plan::factory()->create([
-        'price' => 100,
-        'sale_price' => 80,
-        'sale_starts_at' => now()->subDay(),
-        'sale_ends_at' => now()->addDay(),
-    ]);
+it('applies a coupon to the plan subtotal but not the setup fee', function () {
+    $plan = Plan::factory()->withPrice(Price::factory()->subscription()->priced(100)->setupFee(20))->create();
     $coupon = Coupon::factory()->percentage()->create(['code' => 'HELLO10', 'value' => 10]);
     $cart = Cart::for(User::factory()->create());
     $cart->add($plan, 1);
 
-    expect($cart->totalUsd($coupon))->toBe(72.0);
+    expect($cart->totalUsd($coupon))->toBe(110.0);
 });
 
 it('applies a coupon on the cart page', function () {
     seedCurrencies();
     $user = User::factory()->create();
-    $plan = Plan::factory()->create(['price' => 100]);
+    $plan = Plan::factory()->priced(100)->create();
     Cart::for($user)->add($plan, 1);
     Coupon::factory()->percentage()->create(['code' => 'HELLO10', 'value' => 10]);
 
@@ -125,7 +121,7 @@ it('applies a coupon on the cart page', function () {
 it('rejects an unknown coupon code on the cart page', function () {
     seedCurrencies();
     $user = User::factory()->create();
-    $plan = Plan::factory()->create(['price' => 100]);
+    $plan = Plan::factory()->priced(100)->create();
     Cart::for($user)->add($plan, 1);
 
     Livewire::actingAs($user)
@@ -138,7 +134,7 @@ it('rejects an unknown coupon code on the cart page', function () {
 it('lets a customer remove an applied coupon', function () {
     seedCurrencies();
     $user = User::factory()->create();
-    $plan = Plan::factory()->create(['price' => 100]);
+    $plan = Plan::factory()->priced(100)->create();
     Cart::for($user)->add($plan, 1);
     Coupon::factory()->percentage()->create(['code' => 'HELLO10', 'value' => 10]);
 
@@ -156,8 +152,8 @@ it('applies a product-scoped coupon only to eligible items in the cart', functio
     seedCurrencies();
     $user = User::factory()->create();
     $eligibleProduct = Product::factory()->create();
-    $eligible = Plan::factory()->create(['product_id' => $eligibleProduct->id, 'price' => 100]);
-    $other = Plan::factory()->create(['price' => 100]);
+    $eligible = Plan::factory()->priced(100)->create(['product_id' => $eligibleProduct->id]);
+    $other = Plan::factory()->priced(100)->create();
     $coupon = Coupon::factory()->percentage()->create(['code' => 'SCOPED10', 'value' => 10]);
     $coupon->products()->attach($eligibleProduct);
     $cart = Cart::for($user);

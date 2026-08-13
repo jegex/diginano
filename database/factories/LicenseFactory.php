@@ -32,8 +32,17 @@ class LicenseFactory extends Factory
             'plan_id' => $plan->id,
             'product_id' => $plan->product_id,
             'is_active' => true,
-            'activation_limit' => $plan->activation_limit,
+            'activation_limit' => $plan->activationLimit(),
         ];
+    }
+
+    public function forPlan(Plan $plan, User $user): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'plan_id' => $plan->id,
+            'product_id' => $plan->product_id,
+            'user_id' => $user->id,
+        ]);
     }
 
     public function inactive(): static

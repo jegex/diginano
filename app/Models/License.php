@@ -23,7 +23,7 @@ use Illuminate\Support\Str;
  * @property int $product_id
  * @property int|null $subscription_id
  * @property bool $is_active
- * @property int $activation_limit
+ * @property int|null $activation_limit
  *
  * @method static LicenseFactory factory()
  */
@@ -123,8 +123,9 @@ class License extends Model
     /**
      * Whether the License currently grants download/usage access.
      *
-     * One-time Licenses are valid indefinitely while active; subscription
-     * Licenses are valid while their Subscription is active or in grace.
+     * One-time Licenses are valid indefinitely (or until their license length
+     * elapses) while active; subscription Licenses are valid while their
+     * Subscription is active or in grace.
      */
     public function isUsable(): bool
     {
@@ -132,12 +133,14 @@ class License extends Model
             return false;
         }
 
-        if ($this->plan->pricing_mode->isSubscription()) {
+        if ($this->plan->price?->isSubscription() ?? false) {
             return $this->subscription !== null
                 && $this->subscription->status !== SubscriptionStatus::Cancelled;
         }
 
-        return true;
+        $endsAt = $this->plan->licenseEndsAt($this->created_at);
+
+        return $endsAt === null || $endsAt->isFuture();
     }
 
     /**
@@ -145,11 +148,11 @@ class License extends Model
      */
     public function validUntil(): ?Carbon
     {
-        if ($this->plan->pricing_mode->isSubscription()) {
+        if ($this->plan->price?->isSubscription() ?? false) {
             return $this->subscription?->grace_ends_at ?? $this->subscription?->ends_at;
         }
 
-        return null;
+        return $this->plan->licenseEndsAt($this->created_at);
     }
 
     /**
@@ -166,7 +169,7 @@ class License extends Model
             return $existing;
         }
 
-        if ($this->activations()->count() >= $this->activation_limit) {
+        if ($this->activation_limit !== null && $this->activations()->count() >= $this->activation_limit) {
             throw new DomainException("Activation limit of {$this->activation_limit} reached for license {$this->key}.");
         }
 

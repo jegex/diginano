@@ -23,7 +23,8 @@ class LicenseInfolist
                     ->formatStateUsing(fn (bool $state): string => $state ? 'Active' : 'Inactive')
                     ->color(fn (bool $state): string => $state ? 'success' : 'danger'),
                 TextEntry::make('activation_limit')
-                    ->label('Activation limit'),
+                    ->label('Activation limit')
+                    ->formatStateUsing(fn (?int $state): string => $state === null ? 'Unlimited' : (string) $state),
                 TextEntry::make('valid_until')
                     ->label('Valid until')
                     ->state(fn ($record) => $record->validUntil())

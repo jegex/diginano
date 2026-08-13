@@ -11,7 +11,7 @@ use Livewire\Livewire;
 
 it('shows the default USD price on the product page', function () {
     seedCurrencies();
-    $plan = Plan::factory()->create(['price' => 99.5]);
+    $plan = Plan::factory()->priced(99.5)->create();
 
     Livewire::test(ProductDetail::class, ['product' => $plan->product])
         ->assertSee('$99.50');
@@ -20,7 +20,7 @@ it('shows the default USD price on the product page', function () {
 it('converts the product price to the customers display currency', function () {
     $user = User::factory()->create(['display_currency' => 'idr']);
     seedCurrencies(['idr' => 16000]);
-    $plan = Plan::factory()->create(['price' => 100]);
+    $plan = Plan::factory()->priced(100)->create();
 
     Livewire::actingAs($user)
         ->test(ProductDetail::class, ['product' => $plan->product])
@@ -30,7 +30,7 @@ it('converts the product price to the customers display currency', function () {
 it('shows the cart subtotal in the customers display currency', function () {
     $user = User::factory()->create(['display_currency' => 'eur']);
     seedCurrencies(['eur' => 0.9]);
-    $plan = Plan::factory()->create(['price' => 100]);
+    $plan = Plan::factory()->priced(100)->create();
     Cart::for($user)->add($plan, 2);
 
     Livewire::actingAs($user)
@@ -54,7 +54,7 @@ it('lets a customer choose their display currency', function () {
 it('re-renders the subtotal in the newly chosen currency', function () {
     $user = User::factory()->create();
     seedCurrencies(['idr' => 16000]);
-    $plan = Plan::factory()->create(['price' => 50]);
+    $plan = Plan::factory()->priced(50)->create();
     Cart::for($user)->add($plan, 1);
 
     Livewire::actingAs($user)

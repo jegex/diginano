@@ -57,14 +57,19 @@ class OrderFinalizer
     }
 
     /**
-     * Issue Licenses for one OrderItem: quantity × licenses_per_unit keys.
+     * Issue Licenses for one OrderItem: one key per unit of quantity, only
+     * when the plan issues license keys.
      */
     private function issueLicenses(Order $order, OrderItem $item, ?Subscription $subscription): void
     {
-        $count = $item->quantity * $item->licenses_per_unit;
+        $plan = $item->plan;
+
+        if (! $plan->hasLicenseKeys()) {
+            return;
+        }
 
         $licenses = [];
-        for ($i = 0; $i < $count; $i++) {
+        for ($i = 0; $i < $item->quantity; $i++) {
             $licenses[] = [
                 'key' => License::generateKey(),
                 'user_id' => $order->user_id,
@@ -73,7 +78,7 @@ class OrderFinalizer
                 'plan_id' => $item->plan_id,
                 'product_id' => $item->product_id,
                 'subscription_id' => $subscription?->id,
-                'activation_limit' => $item->plan->activation_limit,
+                'activation_limit' => $plan->activationLimit(),
                 'is_active' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -91,7 +96,7 @@ class OrderFinalizer
      */
     private function ensureSubscription(Order $order, OrderItem $item): ?Subscription
     {
-        if (! $item->plan->pricing_mode->isSubscription()) {
+        if (! ($item->plan->price?->isSubscription() ?? false)) {
             return null;
         }
 
@@ -104,6 +109,7 @@ class OrderFinalizer
             return Subscription::create([
                 'user_id' => $order->user_id,
                 'plan_id' => $item->plan_id,
+                'quantity' => $item->quantity,
                 'order_id' => $order->id,
                 'status' => SubscriptionStatus::Active,
                 'starts_at' => now(),
@@ -114,7 +120,7 @@ class OrderFinalizer
         }
 
         if ($subscription->isCancelled()) {
-            $subscription->reactivate($item->plan, $order);
+            $subscription->reactivate($item->plan, $order, null, $item->quantity);
 
             return $subscription;
         }

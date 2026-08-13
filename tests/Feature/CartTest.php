@@ -76,7 +76,7 @@ it('lets a customer remove an item from the cart', function () {
 
 it('shows items that were added in a previous request', function () {
     $user = User::factory()->create();
-    $plan = Plan::factory()->create(['name' => 'Lifetime', 'price' => 50]);
+    $plan = Plan::factory()->priced(50)->create(['name' => 'Lifetime']);
     Cart::for($user)->add($plan, 2);
 
     Livewire::actingAs($user)

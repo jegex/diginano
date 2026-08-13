@@ -74,7 +74,7 @@ class LicenseController extends Controller
     private function resolveLicense(string $key): License
     {
         return License::query()
-            ->with(['plan', 'subscription', 'product'])
+            ->with(['plan.price', 'subscription', 'product'])
             ->where('key', $key)
             ->firstOrFail();
     }

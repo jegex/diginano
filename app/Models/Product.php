@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PlanStatus;
 use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -51,6 +52,19 @@ class Product extends Model
     public function plans(): HasMany
     {
         return $this->hasMany(Plan::class);
+    }
+
+    /**
+     * Plans visible on the storefront: published only, sorted by weight.
+     *
+     * @return HasMany<Plan, $this>
+     */
+    public function publishedPlans(): HasMany
+    {
+        return $this->plans()
+            ->where('status', PlanStatus::Published)
+            ->orderBy('sort')
+            ->orderBy('id');
     }
 
     /**

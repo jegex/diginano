@@ -32,6 +32,9 @@
                                 <p class="mt-2 text-sm text-gray-600">
                                     Periode berakhir: {{ $subscription->periodEndLabel() }}
                                 </p>
+                                <p class="mt-1 text-sm text-gray-600">
+                                    Jumlah: {{ $subscription->quantity }}
+                                </p>
                                 @if ($subscription->isInGrace())
                                     <p class="mt-1 text-sm text-amber-600">
                                         Masa tenggang berakhir: {{ $subscription->grace_ends_at?->format('d M Y') }}

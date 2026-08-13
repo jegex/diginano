@@ -45,7 +45,7 @@ function cryptomusSignature(array $payload): string
 it('redirects to the Cryptomus payment page after checkout and stores the invoice reference', function () {
     seedCurrencies();
     $user = User::factory()->create();
-    $plan = Plan::factory()->create(['price' => 100]);
+    $plan = Plan::factory()->priced(100)->create();
     $method = PaymentMethod::factory()->cryptomus()->create();
     Cart::for($user)->add($plan, 1);
 
@@ -89,7 +89,7 @@ it('redirects to the Cryptomus payment page after checkout and stores the invoic
 
 it('lets the customer reopen the Cryptomus payment from the receipt', function () {
     $user = User::factory()->create();
-    $plan = Plan::factory()->create(['price' => 100]);
+    $plan = Plan::factory()->priced(100)->create();
     $order = makeCryptomusOrder($user, [[$plan, 1]]);
 
     Http::fake([
@@ -116,7 +116,7 @@ it('lets the customer reopen the Cryptomus payment from the receipt', function (
 
 it('completes a pending order when Cryptomus sends a verified paid notification', function () {
     $user = User::factory()->create();
-    $plan = Plan::factory()->create(['price' => 100, 'licenses_per_unit' => 2]);
+    $plan = Plan::factory()->priced(100)->create();
     $order = makeCryptomusOrder($user, [[$plan, 1]]);
     $payload = [
         'uuid' => 'invoice-uuid-123',
@@ -138,12 +138,12 @@ it('completes a pending order when Cryptomus sends a verified paid notification'
         ->and($order->provider_reference)->toBe('invoice-uuid-123')
         ->and($order->provider_status)->toBe('paid')
         ->and($order->payment_type)->toBe('USDT')
-        ->and($order->licenses)->toHaveCount(2);
+        ->and($order->licenses)->toHaveCount(1);
 });
 
 it('is idempotent when Cryptomus replays a paid notification', function () {
     $user = User::factory()->create();
-    $plan = Plan::factory()->create(['price' => 100, 'licenses_per_unit' => 2]);
+    $plan = Plan::factory()->priced(100)->create();
     $order = makeCryptomusOrder($user, [[$plan, 1]]);
     $payload = [
         'uuid' => 'invoice-uuid-123',
@@ -161,12 +161,12 @@ it('is idempotent when Cryptomus replays a paid notification', function () {
     $order->refresh();
 
     expect($order->status)->toBe(OrderStatus::Completed)
-        ->and($order->licenses)->toHaveCount(2);
+        ->and($order->licenses)->toHaveCount(1);
 });
 
 it('completes an overpaid notification', function () {
     $user = User::factory()->create();
-    $plan = Plan::factory()->create(['price' => 100]);
+    $plan = Plan::factory()->priced(100)->create();
     $order = makeCryptomusOrder($user, [[$plan, 1]]);
     $payload = [
         'uuid' => 'invoice-uuid-123',
@@ -186,7 +186,7 @@ it('completes an overpaid notification', function () {
 
 it('rejects a notification with an invalid signature', function () {
     $user = User::factory()->create();
-    $plan = Plan::factory()->create(['price' => 100]);
+    $plan = Plan::factory()->priced(100)->create();
     $order = makeCryptomusOrder($user, [[$plan, 1]]);
     $payload = [
         'uuid' => 'invoice-uuid-123',
@@ -205,7 +205,7 @@ it('rejects a notification with an invalid signature', function () {
 
 it('cancels the order on fail, cancel, or system_fail notifications', function (string $status) {
     $user = User::factory()->create();
-    $plan = Plan::factory()->create(['price' => 100]);
+    $plan = Plan::factory()->priced(100)->create();
     $order = makeCryptomusOrder($user, [[$plan, 1]]);
     $payload = [
         'uuid' => 'invoice-uuid-123',
@@ -224,7 +224,7 @@ it('cancels the order on fail, cancel, or system_fail notifications', function (
 
 it('leaves the order pending on confirm_check notifications', function () {
     $user = User::factory()->create();
-    $plan = Plan::factory()->create(['price' => 100]);
+    $plan = Plan::factory()->priced(100)->create();
     $order = makeCryptomusOrder($user, [[$plan, 1]]);
     $payload = [
         'uuid' => 'invoice-uuid-123',
@@ -261,7 +261,7 @@ it('ignores notifications for non-cryptomus orders', function () {
     $cart = Cart::for($user);
     $method = PaymentMethod::factory()->manual()->create();
     seedCurrencies();
-    $cart->add(Plan::factory()->create(['price' => 100]), 1);
+    $cart->add(Plan::factory()->priced(100)->create(), 1);
     $order = Order::checkout($cart, $method);
     $payload = [
         'uuid' => 'invoice-uuid-123',

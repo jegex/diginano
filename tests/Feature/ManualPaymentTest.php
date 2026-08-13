@@ -21,7 +21,7 @@ function makeManualOrder(User $user): Order
 {
     auth()->login($user);
     $cart = Cart::for($user);
-    $plan = Plan::factory()->create(['price' => 100]);
+    $plan = Plan::factory()->priced(100)->create();
     $method = PaymentMethod::factory()->manual()->create();
     seedCurrencies();
     $cart->add($plan, 1);
@@ -132,7 +132,7 @@ it('completes the order when an admin approves the proof', function () {
 
     expect($order->status)->toBe(OrderStatus::Completed)
         ->and($order->completed_at)->not->toBeNull()
-        ->and($order->licenses)->toHaveCount($plan->licenses_per_unit);
+        ->and($order->licenses)->toHaveCount(1);
 });
 
 it('cancels the order without licenses when an admin rejects the proof', function () {

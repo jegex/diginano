@@ -24,7 +24,7 @@ it('prompts a guest to log in before checking out', function () {
 
 it('lets a customer place an order from their cart', function () {
     $user = User::factory()->create();
-    $plan = Plan::factory()->create(['price' => 100]);
+    $plan = Plan::factory()->priced(100)->create();
     $method = PaymentMethod::factory()->midtrans()->create();
     seedCurrencies();
     Cart::for($user)->add($plan, 2);
@@ -67,7 +67,7 @@ it('lets a customer place an order from their cart', function () {
 
 it('moves a manual order to awaiting confirmation and snapshots the bank amount', function () {
     $user = User::factory()->create();
-    $plan = Plan::factory()->create(['price' => 100]);
+    $plan = Plan::factory()->priced(100)->create();
     $method = PaymentMethod::factory()->manual()->create();
     seedCurrencies();
     Cart::for($user)->add($plan, 1);
@@ -89,7 +89,7 @@ it('moves a manual order to awaiting confirmation and snapshots the bank amount'
 
 it('applies a coupon from the session to the order', function () {
     $user = User::factory()->create();
-    $plan = Plan::factory()->create(['price' => 100]);
+    $plan = Plan::factory()->priced(100)->create();
     $coupon = Coupon::factory()->percentage()->create(['value' => 10]);
     $method = PaymentMethod::factory()->midtrans()->create();
     seedCurrencies();
@@ -120,7 +120,7 @@ it('applies a coupon from the session to the order', function () {
 
 it('stores the display currency and exchange rate on the order', function () {
     $user = User::factory()->create(['display_currency' => 'idr']);
-    $plan = Plan::factory()->create(['price' => 100]);
+    $plan = Plan::factory()->priced(100)->create();
     $method = PaymentMethod::factory()->create();
     seedCurrencies();
     Cart::for($user)->add($plan, 1);

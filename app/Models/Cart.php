@@ -44,13 +44,15 @@ class Cart extends Model
 
     public function add(Plan $plan, int $quantity = 1): CartItem
     {
-        $quantity = max(1, $quantity);
+        $quantity = $plan->isPwyw() || $plan->isUsageBased() ? 1 : max(1, $quantity);
 
         /** @var CartItem|null $item */
         $item = $this->items()->where('plan_id', $plan->id)->first();
 
         if ($item !== null) {
-            $item->update(['quantity' => $item->quantity + $quantity]);
+            $item->update([
+                'quantity' => $plan->isPwyw() ? 1 : min(999, $item->quantity + $quantity),
+            ]);
 
             return $item;
         }
@@ -80,6 +82,14 @@ class Cart extends Model
         return (float) $this->items->sum(fn (CartItem $item): float => $item->lineTotalUsd());
     }
 
+    /**
+     * One-time setup fees charged at checkout for new subscription items.
+     */
+    public function setupFeeUsd(): float
+    {
+        return (float) $this->items->sum(fn (CartItem $item): float => $item->setupFeeUsd());
+    }
+
     public function eligibleSubtotalUsd(Coupon $coupon): float
     {
         return (float) $this->items->sum(
@@ -96,7 +106,7 @@ class Cart extends Model
 
     public function totalUsd(?Coupon $coupon = null): float
     {
-        $total = $this->subtotalUsd();
+        $total = $this->subtotalUsd() + $this->setupFeeUsd();
 
         if ($coupon !== null) {
             $total -= $this->couponDiscountUsd($coupon);

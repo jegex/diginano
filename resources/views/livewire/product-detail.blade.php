@@ -18,44 +18,65 @@
 
             <h2 class="mt-8 text-lg font-semibold">Pilih Plan</h2>
             <div class="mt-4 space-y-4">
-                @foreach ($product->plans as $plan)
+                @foreach ($product->publishedPlans as $plan)
+                    @php($price = $plan->price)
                     <div class="rounded-xl border border-gray-200 p-5">
                         <div class="flex items-baseline justify-between gap-4">
                             <h3 class="font-semibold">{{ $plan->name }}</h3>
                             <p class="text-lg font-semibold">
-                                @if ($plan->isOnSale())
-                                    <span class="mr-2 text-sm text-gray-400 line-through">
-                                        {{ $currency->format($currency->convertUsd($plan->price)) }}
-                                    </span>
+                                @if ($plan->isFree())
+                                    Gratis
+                                @elseif ($plan->isPwyw())
+                                    Mulai dari
+                                    {{ $currency->format($currency->convertUsd($price?->min_price ?? $price?->suggested_price ?? 0)) }}
+                                @else
+                                    {{ $currency->format($currency->convertUsd($price?->unit_price ?? 0)) }}
                                 @endif
-                                {{ $currency->format($currency->convertUsd($plan->effectivePriceUsd())) }}
                             </p>
                         </div>
+                        @if ($plan->description)
+                            <p class="mt-1 text-sm text-gray-500">{{ $plan->description }}</p>
+                        @endif
                         <p class="mt-1 text-sm text-gray-500">
-                            @if ($plan->pricing_mode === \App\Enums\PlanPricing::Subscription)
+                            @if ($plan->isSubscription())
                                 Per {{ $plan->periodLabel() }}
+                            @elseif ($plan->isPwyw())
+                                Bayar sesuai keinginan — berlaku selamanya
+                            @elseif ($plan->isFree())
+                                Gratis — berlaku selamanya
                             @else
                                 Bayar sekali — berlaku selamanya
                             @endif
                         </p>
-                        <p class="mt-1 text-sm text-gray-500">
-                            {{ $plan->licenses_per_unit }} lisensi per unit
-                        </p>
+                        @if ($plan->isUsageBased())
+                            <p class="mt-1 text-sm text-gray-500">Penagihan berdasarkan pemakaian (metered).</p>
+                        @endif
+                        @if ($plan->has_license_keys)
+                            <p class="mt-1 text-sm text-gray-500">
+                                @if ($plan->is_license_limit_unlimited)
+                                    Aktivasi tanpa batas
+                                @else
+                                    Hingga {{ $plan->license_activation_limit }} aktivasi
+                                @endif
+                            </p>
+                        @endif
                         <div class="mt-4 flex items-center gap-3">
-                            <input
-                                type="number"
-                                min="1"
-                                value="1"
-                                wire:model="quantities.{{ $plan->id }}"
-                                class="w-20 rounded-lg border border-gray-300 px-3 py-2 text-sm"
-                                aria-label="Jumlah untuk {{ $plan->name }}"
-                            >
+                            @unless ($plan->isPwyw() || $plan->isUsageBased())
+                                <input
+                                    type="number"
+                                    min="1"
+                                    value="1"
+                                    wire:model="quantities.{{ $plan->id }}"
+                                    class="w-20 rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                                    aria-label="Jumlah untuk {{ $plan->name }}"
+                                >
+                            @endunless
                             <button
                                 type="button"
                                 wire:click="addToCart({{ $plan->id }})"
                                 class="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-gray-700"
                             >
-                                Tambah ke keranjang
+                                {{ $plan->isFree() ? 'Dapatkan gratis' : 'Tambah ke keranjang' }}
                             </button>
                             @error("quantities.{$plan->id}")
                                 <span class="text-sm text-red-600">{{ $message }}</span>

@@ -17,17 +17,42 @@
                         <div class="min-w-0">
                             <h2 class="font-semibold">{{ $item->plan->name }}</h2>
                             <p class="text-sm text-gray-500">{{ $item->plan->product->name }}</p>
+                            @if ($item->plan->isPwyw())
+                                <p class="mt-1 text-sm text-gray-500">Harga sesuai keinginan, minimal
+                                    {{ $cart->displayCurrency()->format($cart->displayCurrency()->convertUsd($item->minAmountUsd())) }}
+                                </p>
+                            @elseif ($item->plan->isUsageBased())
+                                <p class="mt-1 text-sm text-gray-500">Ditagih berdasarkan pemakaian saat perpanjangan.</p>
+                            @endif
+                            <p class="mt-1 text-sm font-medium text-gray-700">
+                                {{ $cart->displayCurrency()->format($cart->displayCurrency()->convertUsd($item->lineTotalUsd())) }}
+                            </p>
                         </div>
 
                         <div class="flex items-center gap-3">
-                            <input
-                                type="number"
-                                min="1"
-                                wire:model="quantities.{{ $item->id }}"
-                                wire:change="updateQuantity({{ $item->id }})"
-                                class="w-20 rounded-lg border border-gray-300 px-3 py-2 text-sm"
-                                aria-label="Jumlah {{ $item->plan->name }}"
-                            >
+                            @if ($item->plan->isPwyw())
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    min="{{ $item->minAmountUsd() }}"
+                                    wire:model="amounts.{{ $item->id }}"
+                                    wire:change="updateAmount({{ $item->id }})"
+                                    class="w-28 rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                                    aria-label="Nominal {{ $item->plan->name }}"
+                                >
+                                @error("amounts.{$item->id}")
+                                    <span class="text-sm text-red-600">{{ $message }}</span>
+                                @enderror
+                            @elseif (! $item->plan->isUsageBased())
+                                <input
+                                    type="number"
+                                    min="1"
+                                    wire:model="quantities.{{ $item->id }}"
+                                    wire:change="updateQuantity({{ $item->id }})"
+                                    class="w-20 rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                                    aria-label="Jumlah {{ $item->plan->name }}"
+                                >
+                            @endif
                             <button
                                 type="button"
                                 wire:click="removeItem({{ $item->id }})"
@@ -105,6 +130,12 @@
                     <p class="mt-1 text-2xl font-semibold">
                         {{ $cart->displayCurrency()->format($cart->subtotalIn($cart->displayCurrency())) }}
                     </p>
+                    @if ($cart->setupFeeUsd() > 0)
+                        <p class="mt-2 text-sm text-gray-500">Biaya pengaturan</p>
+                        <p class="text-sm">
+                            {{ $cart->displayCurrency()->format($cart->displayCurrency()->convertUsd($cart->setupFeeUsd())) }}
+                        </p>
+                    @endif
                     @if ($coupon !== null)
                         <p class="mt-2 text-sm text-gray-500">Diskon {{ $coupon->code }}</p>
                         <p class="text-sm text-green-600">

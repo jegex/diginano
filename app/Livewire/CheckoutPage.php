@@ -51,6 +51,8 @@ class CheckoutPage extends Component
             return;
         }
 
+        abort_if($cart->totalUsd($this->couponFromSession()) <= 0, 422, 'Pesanan gratis lewat tombol khusus.');
+
         $this->validate([
             'paymentMethodId' => [
                 'required',
@@ -67,6 +69,27 @@ class CheckoutPage extends Component
         session()->forget('applied_coupon_code');
 
         $this->redirectForPayment($order, $paymentMethod);
+    }
+
+    public function checkoutFree(): void
+    {
+        abort_unless(auth()->check(), 403);
+
+        $cart = $this->cart();
+
+        if ($cart->isEmpty()) {
+            $this->redirectRoute('cart');
+
+            return;
+        }
+
+        abort_if($cart->totalUsd($this->couponFromSession()) > 0, 422, 'Pesanan ini tidak gratis.');
+
+        $order = Order::freeCheckout($cart);
+
+        session()->forget('applied_coupon_code');
+
+        $this->redirectRoute('orders.show', $order);
     }
 
     public function render(): View

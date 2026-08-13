@@ -15,6 +15,7 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $user_id
  * @property int $plan_id
+ * @property int $quantity
  * @property int $order_id
  * @property SubscriptionStatus $status
  * @property Carbon $starts_at
@@ -24,7 +25,7 @@ use Illuminate\Support\Carbon;
  *
  * @method static SubscriptionFactory factory()
  */
-#[Fillable(['user_id', 'plan_id', 'order_id', 'status', 'starts_at', 'ends_at', 'grace_ends_at', 'cancelled_at'])]
+#[Fillable(['user_id', 'plan_id', 'quantity', 'order_id', 'status', 'starts_at', 'ends_at', 'grace_ends_at', 'cancelled_at'])]
 class Subscription extends Model
 {
     /** @use HasFactory<SubscriptionFactory> */
@@ -36,6 +37,7 @@ class Subscription extends Model
     protected function casts(): array
     {
         return [
+            'quantity' => 'integer',
             'status' => SubscriptionStatus::class,
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
@@ -82,6 +84,14 @@ class Subscription extends Model
     public function renewalOrders(): HasMany
     {
         return $this->hasMany(Order::class, 'subscription_id');
+    }
+
+    /**
+     * @return HasMany<UsageRecord, $this>
+     */
+    public function usageRecords(): HasMany
+    {
+        return $this->hasMany(UsageRecord::class);
     }
 
     public function isActive(): bool
@@ -152,12 +162,13 @@ class Subscription extends Model
      * Restart a cancelled subscription from now (used when the customer buys
      * the same plan again through a fresh checkout).
      */
-    public function reactivate(Plan $plan, Order $order, ?Carbon $now = null): void
+    public function reactivate(Plan $plan, Order $order, ?Carbon $now = null, ?int $quantity = null): void
     {
         $now ??= now();
 
         $this->update([
             'status' => SubscriptionStatus::Active,
+            'quantity' => $quantity ?? $this->quantity,
             'order_id' => $order->id,
             'starts_at' => $now,
             'ends_at' => $plan->periodEndsAt($now),

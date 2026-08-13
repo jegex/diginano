@@ -8,6 +8,7 @@ use App\Models\License;
 use App\Models\Order;
 use App\Models\PaymentMethod;
 use App\Models\Plan;
+use App\Models\Price;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Notifications\RenewalReminderNotification;
@@ -37,9 +38,9 @@ it('lists the customer subscriptions with their current period end', function ()
         ->assertSee('Perpanjang');
 });
 
-it('creates a single-item full-price renewal order with no coupon or sale', function () {
+it('creates a single-item full-price renewal order with no coupon or discount', function () {
     $user = User::factory()->create();
-    $plan = Plan::factory()->subscription()->onSale(['price' => 100])->create();
+    $plan = Plan::factory()->withPrice(Price::factory()->subscription()->priced(100))->create();
     $subscription = Subscription::factory()->forPlan($plan, $user)->create();
     $method = PaymentMethod::factory()->manual()->create();
 
@@ -58,7 +59,7 @@ it('creates a single-item full-price renewal order with no coupon or sale', func
 
 it('uses pending status and the gateway currency for non-manual renewal orders', function () {
     $user = User::factory()->create();
-    $plan = Plan::factory()->subscription()->create(['price' => 50]);
+    $plan = Plan::factory()->withPrice(Price::factory()->subscription()->priced(50))->create();
     $subscription = Subscription::factory()->forPlan($plan, $user)->create();
     $method = PaymentMethod::factory()->midtrans()->create();
 
@@ -71,7 +72,7 @@ it('uses pending status and the gateway currency for non-manual renewal orders',
 
 it('extends the subscription period when the renewal order is completed', function () {
     $user = User::factory()->create();
-    $plan = Plan::factory()->subscription()->create(['price' => 100]);
+    $plan = Plan::factory()->withPrice(Price::factory()->subscription()->priced(100))->create();
     $subscription = Subscription::factory()->forPlan($plan, $user)->create();
     $order = makeRenewalOrder($subscription);
 
@@ -150,7 +151,7 @@ it('cancels a subscription and deactivates its licenses after the grace period',
 
 it('cancels at the end of the current period and refuses further renewals', function () {
     $user = User::factory()->create();
-    $plan = Plan::factory()->subscription()->create(['price' => 100]);
+    $plan = Plan::factory()->withPrice(Price::factory()->subscription()->priced(100))->create();
     $subscription = Subscription::factory()->forPlan($plan, $user)->create([
         'ends_at' => now()->addMonth(),
     ]);
@@ -164,7 +165,7 @@ it('cancels at the end of the current period and refuses further renewals', func
 
 it('reactivates a cancelled subscription when a new order is completed', function () {
     $user = User::factory()->create();
-    $plan = Plan::factory()->subscription()->create(['price' => 100]);
+    $plan = Plan::factory()->withPrice(Price::factory()->subscription()->priced(100))->create();
     $original = Subscription::factory()->forPlan($plan, $user)->create();
     $original->cancel();
     $original->completeCancellation();

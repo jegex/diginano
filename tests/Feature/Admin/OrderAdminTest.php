@@ -29,7 +29,7 @@ it('filters orders by status', function () {
 });
 
 it('shows order details to the admin', function () {
-    $plan = Plan::factory()->create(['price' => 50]);
+    $plan = Plan::factory()->priced(50)->create();
     $order = Order::factory()->create(['total' => 100]);
     OrderItem::factory()->forPlan($plan)->create([
         'order_id' => $order->id,

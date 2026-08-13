@@ -21,8 +21,8 @@ class ProductDetail extends Component
     {
         abort_unless($product->is_published, 404);
 
-        $this->product = $product->load('plans');
-        $this->quantities = $product->plans->mapWithKeys(
+        $this->product = $product->load('publishedPlans.price');
+        $this->quantities = $this->product->publishedPlans->mapWithKeys(
             fn (Plan $plan): array => [$plan->id => 1],
         )->all();
     }
@@ -33,7 +33,7 @@ class ProductDetail extends Component
             "quantities.{$planId}" => ['required', 'integer', 'min:1'],
         ]);
 
-        $plan = $this->product->plans()->findOrFail($planId);
+        $plan = $this->product->publishedPlans()->findOrFail($planId);
 
         if (auth()->guest()) {
             $this->redirectRoute('filament.admin.auth.login');

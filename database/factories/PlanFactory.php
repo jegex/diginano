@@ -2,8 +2,11 @@
 
 namespace Database\Factories;
 
-use App\Enums\BillingPeriod;
-use App\Enums\PlanPricing;
+use App\Enums\PlanStatus;
+use App\Enums\PriceCategory;
+use App\Enums\PricingScheme;
+use App\Enums\RenewalIntervalUnit;
+use App\Enums\UsageAggregation;
 use App\Models\Plan;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -23,36 +26,94 @@ class PlanFactory extends Factory
         return [
             'product_id' => Product::factory(),
             'name' => fake()->word(),
-            'pricing_mode' => PlanPricing::OneTime,
-            'price' => fake()->randomFloat(2, 5, 200),
-            'billing_period' => null,
-            'licenses_per_unit' => 1,
-            'activation_limit' => 1,
+            'has_license_keys' => true,
+            'license_activation_limit' => 1,
+            'is_license_limit_unlimited' => false,
+            'is_license_length_unlimited' => true,
+            'sort' => 0,
+            'status' => PlanStatus::Published,
         ];
     }
 
     /**
-     * Make the plan a subscription plan.
+     * Give every factory-created plan a default 1:1 Price unless one already
+     * exists. Pricing states build their price via `withPrice()`, which is
+     * created before this callback runs.
      */
-    public function subscription(BillingPeriod $period = BillingPeriod::Monthly): static
+    public function configure(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'pricing_mode' => PlanPricing::Subscription,
-            'billing_period' => $period,
-        ]);
+        return $this->afterCreating(function (Plan $plan): void {
+            if ($plan->price()->exists()) {
+                return;
+            }
+
+            $plan->price()->create([
+                'category' => PriceCategory::OneTime,
+                'scheme' => PricingScheme::Standard,
+                'unit_price' => fake()->randomFloat(2, 5, 200),
+            ]);
+        });
     }
 
     /**
-     * Put the plan on an active sale.
-     *
-     * @param  array<string, mixed>  $overrides
+     * Attach a price built with the PriceFactory. Chain states on the price
+     * factory for composed pricing (e.g. subscription with a setup fee).
      */
-    public function onSale(array $overrides = []): static
+    public function withPrice(PriceFactory $factory): static
     {
-        return $this->state(fn (array $attributes) => array_merge([
-            'sale_price' => round((float) $attributes['price'] * 0.8, 2),
-            'sale_starts_at' => now()->subDay(),
-            'sale_ends_at' => now()->addDay(),
-        ], $overrides));
+        return $this->has($factory, 'price');
+    }
+
+    public function priced(float $amount): static
+    {
+        return $this->withPrice(PriceFactory::new()->priced($amount));
+    }
+
+    public function subscription(
+        RenewalIntervalUnit $unit = RenewalIntervalUnit::Month,
+        int $quantity = 1,
+    ): static {
+        return $this->withPrice(PriceFactory::new()->subscription($unit, $quantity));
+    }
+
+    public function leadMagnet(): static
+    {
+        return $this->withPrice(PriceFactory::new()->leadMagnet());
+    }
+
+    public function pwyw(float $suggested, float $min = 0): static
+    {
+        return $this->withPrice(PriceFactory::new()->pwyw($suggested, $min));
+    }
+
+    public function usageBased(UsageAggregation $mode = UsageAggregation::Sum): static
+    {
+        return $this->withPrice(PriceFactory::new()->usageBased($mode));
+    }
+
+    public function setupFee(float $amount): static
+    {
+        return $this->withPrice(PriceFactory::new()->setupFee($amount));
+    }
+
+    /**
+     * @param  array<int, array{last_unit: int|null, unit_price: int, fixed_fee: int|null}>  $tiers
+     */
+    public function volume(array $tiers): static
+    {
+        return $this->withPrice(PriceFactory::new()->volume($tiers));
+    }
+
+    /**
+     * @param  array<int, array{last_unit: int|null, unit_price: int, fixed_fee: int|null}>  $tiers
+     */
+    public function graduated(array $tiers): static
+    {
+        return $this->withPrice(PriceFactory::new()->graduated($tiers));
+    }
+
+    public function package(float $unit, int $size): static
+    {
+        return $this->withPrice(PriceFactory::new()->package($unit, $size));
     }
 }

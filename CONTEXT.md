@@ -9,11 +9,15 @@ A digital good for sale — PHP script, source code, plugin, theme, or template.
 _Avoid_: Item, good, asset
 
 **Plan**:
-A pricing variant of a Product with exactly one pricing mode — one-time or subscription — and optionally `licenses_per_unit` (how many License keys each unit of quantity grants).
-_Avoid_: Package, pricing tier
+A SKU (pricing variant) of a Product, paired with exactly one Price (`hasOne`). A Plan carries the license rules: `has_license_keys`, `license_activation_limit` (unlimited via `is_license_limit_unlimited`), and license length for one-time plans (`license_length_value/unit`, or `is_license_length_unlimited`).
+_Avoid_: Package, pricing tier, pricing mode
+
+**Price**:
+The pricing configuration of a Plan (`hasOne`, 1:1): a `category` (`one_time`, `subscription`, `lead_magnet`, `pwyw`), a `scheme` (`standard`, `package`, `volume`, `graduated`), `unit_price` in USD, optional setup fee, tier tables, renewal/trial intervals, and pwyw suggested/min prices. Money is stored as integer cents and read through `MoneyCast` as float dollars.
+_Avoid_: Price model, plan price
 
 **License**:
-An entitlement to use a Product, issued when an Order succeeds. One unit of Plan quantity grants `licenses_per_unit` License keys (default 1). One-time plans grant an indefinite license; subscription plans grant a license that is valid only while the Subscription is active.
+An entitlement to use a Product, issued when an Order succeeds. One unit of Plan quantity grants exactly one License key. One-time plans grant an indefinite (or license-length-bounded) license; subscription plans grant a license valid only while the Subscription is active.
 _Avoid_: Key (the key is a property), serial
 
 **Download**:
@@ -33,11 +37,11 @@ A registered account holder who purchases products and manages their licenses, d
 _Avoid_: User, buyer, client
 
 **Order**:
-A purchase of one or more Plan line items, settled via one PaymentMethod. A successful Order issues the matching Licenses for each line item.
+A purchase of one or more Plan line items, settled via one PaymentMethod. A successful Order issues the matching Licenses for each line item. Zero-value orders (lead magnets, free checkout) complete immediately without a payment method.
 _Avoid_: Transaction, purchase, basket
 
 **OrderItem**:
-A line of an Order: a Plan with a quantity. Licenses issued for the item = quantity × the Plan's `licenses_per_unit`.
+A line of an Order: a Plan with a quantity, snapshotting `unit_price`, `line_total`, and `setup_fee`. Licenses issued for the item = quantity.
 _Avoid_: Line item (wordy), order line
 
 **Cart**:
@@ -45,20 +49,20 @@ The customer's pending selection of Plans with quantities, checked out into an O
 _Avoid_: Basket
 
 **Subscription**:
-A recurring billing arrangement for a subscription-plan Order. While active, its Licenses remain valid.
+A recurring billing arrangement for a subscription-plan Order. While active, its Licenses remain valid. One subscription per user+plan; renewals are manual (ADR-0002).
 _Avoid_: Recurring plan
+
+**UsageRecord**:
+A metered usage report for a subscription's current billing period, aggregated at renewal by the Price's `usage_aggregation` mode (sum / last-during-period / last-ever / max).
+_Avoid_: Meter, usage metric
 
 **PaymentMethod**:
 The channel used to settle an Order — manual bank transfer, Midtrans, or crypto (via Cryptomus).
 _Avoid_: Payment gateway, payment provider
 
 **Coupon**:
-A discount code — percentage or fixed amount — that reduces the Order total; on a subscription it applies to the first billing cycle only.
+A discount code — percentage or fixed amount — that reduces the Order subtotal (setup fees excluded); on a subscription it applies to the first billing cycle only.
 _Avoid_: Discount code, promo, voucher
-
-**Sale**:
-An automatic discount attached to a Plan price, optionally for a start/end period, applied without a code. Not applied to renewals.
-_Avoid_: Deal, promotion, flash sale
 
 **Renewal**:
 The act of extending a Subscription for another cycle by paying for it again. MVP renewals are manual: the customer pays via any PaymentMethod and the Subscription extends.

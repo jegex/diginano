@@ -27,9 +27,9 @@ class OrderItemFactory extends Factory
             'product_id' => $plan->product_id,
             'name' => $plan->name,
             'quantity' => 1,
-            'unit_price' => $plan->price,
-            'line_total' => $plan->price,
-            'licenses_per_unit' => $plan->licenses_per_unit,
+            'unit_price' => $plan->price?->unit_price,
+            'line_total' => $plan->price?->unit_price,
+            'setup_fee' => null,
         ];
     }
 
@@ -42,9 +42,9 @@ class OrderItemFactory extends Factory
             'plan_id' => $plan->id,
             'product_id' => $plan->product_id,
             'name' => $plan->name,
-            'unit_price' => $plan->effectivePriceUsd(),
-            'line_total' => $plan->effectivePriceUsd(),
-            'licenses_per_unit' => $plan->licenses_per_unit,
+            'unit_price' => $plan->price?->unit_price,
+            'line_total' => $plan->price?->unit_price,
+            'setup_fee' => $plan->price?->setupFeeUsd() > 0 ? $plan->price?->setupFeeUsd() : null,
         ]);
     }
 }

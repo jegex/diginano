@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Enums\BillingPeriod;
+use App\Enums\RenewalIntervalUnit;
 use App\Enums\SubscriptionStatus;
 use App\Models\Order;
 use App\Models\Plan;
@@ -29,6 +29,7 @@ class SubscriptionFactory extends Factory
         return [
             'user_id' => $user->id,
             'plan_id' => $plan->id,
+            'quantity' => 1,
             'order_id' => Order::factory(),
             'status' => SubscriptionStatus::Active,
             'starts_at' => now()->subMonth(),
@@ -63,10 +64,10 @@ class SubscriptionFactory extends Factory
         ]);
     }
 
-    public function period(BillingPeriod $period): static
+    public function period(RenewalIntervalUnit $unit, int $quantity = 1): static
     {
         return $this->state(fn (array $attributes) => [
-            'plan_id' => Plan::factory()->subscription($period),
+            'plan_id' => Plan::factory()->subscription($unit, $quantity),
         ]);
     }
 }

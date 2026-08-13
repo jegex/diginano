@@ -11,7 +11,7 @@ use function Pest\Laravel\get;
 it('lets the order owner view their receipt', function () {
     seedCurrencies();
     $user = User::factory()->create();
-    $plan = Plan::factory()->create(['price' => 50]);
+    $plan = Plan::factory()->priced(50)->create();
     $order = Order::factory()->create([
         'user_id' => $user->id,
         'status' => OrderStatus::Completed,
