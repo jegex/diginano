@@ -1,11 +1,11 @@
 <?php
 
+use App\Enums\OrderStatus;
 use App\Filament\Resources\Orders\Pages\ListOrders;
 use App\Filament\Resources\Orders\Pages\ViewOrder;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Plan;
-use App\OrderStatus;
 use Livewire\Livewire;
 
 it('lists orders for the admin', function () {

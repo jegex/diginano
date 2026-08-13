@@ -1,10 +1,10 @@
 <?php
 
+use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Plan;
 use App\Models\User;
-use App\OrderStatus;
 
 use function Pest\Laravel\get;
 

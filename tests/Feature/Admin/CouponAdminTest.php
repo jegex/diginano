@@ -1,6 +1,6 @@
 <?php
 
-use App\CouponType;
+use App\Enums\CouponType;
 use App\Filament\Resources\Coupons\Pages\CreateCoupon;
 use App\Filament\Resources\Coupons\Pages\EditCoupon;
 use App\Models\Coupon;

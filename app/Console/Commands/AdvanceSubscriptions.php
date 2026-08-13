@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\SubscriptionStatus;
 use App\Models\Subscription;
 use App\Notifications\RenewalReminderNotification;
-use App\SubscriptionStatus;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;

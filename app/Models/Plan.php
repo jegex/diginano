@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\BillingPeriod;
-use App\PlanPricing;
+use App\Enums\BillingPeriod;
+use App\Enums\PlanPricing;
 use Database\Factories\PlanFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

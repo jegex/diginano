@@ -1,6 +1,6 @@
 <?php
 
-use App\CouponType;
+use App\Enums\CouponType;
 use App\Livewire\CartPage;
 use App\Models\Cart;
 use App\Models\Coupon;

@@ -1,10 +1,10 @@
 <?php
 
+use App\Enums\PaymentMethodType;
 use App\Filament\Resources\PaymentMethods\Pages\CreatePaymentMethod;
 use App\Filament\Resources\PaymentMethods\Pages\EditPaymentMethod;
 use App\Filament\Resources\PaymentMethods\Pages\ListPaymentMethods;
 use App\Models\PaymentMethod;
-use App\PaymentMethodType;
 use Livewire\Livewire;
 
 use function Pest\Laravel\assertDatabaseHas;

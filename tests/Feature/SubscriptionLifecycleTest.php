@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\OrderStatus;
+use App\Enums\SubscriptionStatus;
 use App\Livewire\SubscriptionsPage;
 use App\Models\Cart;
 use App\Models\License;
@@ -9,9 +11,7 @@ use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Notifications\RenewalReminderNotification;
-use App\OrderStatus;
 use App\Services\OrderFinalizer;
-use App\SubscriptionStatus;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 use Symfony\Component\HttpKernel\Exception\HttpException;

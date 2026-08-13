@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Enums\OrderStatus;
+use App\Enums\SubscriptionStatus;
 use App\Models\License;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -9,8 +11,6 @@ use App\Models\Subscription;
 use App\Notifications\LicenseKeysNotification;
 use App\Notifications\OrderConfirmationNotification;
 use App\Notifications\PaymentReceivedNotification;
-use App\OrderStatus;
-use App\SubscriptionStatus;
 use Illuminate\Support\Facades\DB;
 
 class OrderFinalizer

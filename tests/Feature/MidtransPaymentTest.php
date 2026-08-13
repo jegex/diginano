@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\OrderStatus;
 use App\Livewire\CheckoutPage;
 use App\Livewire\OrderReceipt;
 use App\Models\Cart;
@@ -7,7 +8,6 @@ use App\Models\Order;
 use App\Models\PaymentMethod;
 use App\Models\Plan;
 use App\Models\User;
-use App\OrderStatus;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;

@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\SubscriptionStatus;
+use App\Enums\SubscriptionStatus;
 use Database\Factories\SubscriptionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

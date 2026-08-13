@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Enums\PaymentMethodType;
 use App\Models\PaymentMethod;
-use App\PaymentMethodType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

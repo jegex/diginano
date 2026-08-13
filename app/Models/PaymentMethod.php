@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\PaymentMethodType;
+use App\Enums\PaymentMethodType;
 use Database\Factories\PaymentMethodFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;

@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\OrderStatus;
 use App\Models\Order;
-use App\OrderStatus;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;

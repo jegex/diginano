@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\CouponType;
+use App\Enums\CouponType;
 use App\Models\Coupon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;

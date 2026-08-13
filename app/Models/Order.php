@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\OrderStatus;
-use App\PaymentMethodType;
+use App\Enums\OrderStatus;
+use App\Enums\PaymentMethodType;
 use Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

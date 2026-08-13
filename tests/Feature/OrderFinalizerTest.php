@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\OrderStatus;
+use App\Enums\SubscriptionStatus;
 use App\Models\Cart;
 use App\Models\License;
 use App\Models\Order;
@@ -10,9 +12,7 @@ use App\Models\User;
 use App\Notifications\LicenseKeysNotification;
 use App\Notifications\OrderConfirmationNotification;
 use App\Notifications\PaymentReceivedNotification;
-use App\OrderStatus;
 use App\Services\OrderFinalizer;
-use App\SubscriptionStatus;
 use Illuminate\Support\Facades\Notification;
 
 function makeOrder(User $user, array $plans = []): Order

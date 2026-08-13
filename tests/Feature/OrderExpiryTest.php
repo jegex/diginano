@@ -1,7 +1,7 @@
 <?php
 
+use App\Enums\OrderStatus;
 use App\Models\Order;
-use App\OrderStatus;
 
 use function Pest\Laravel\artisan;
 

@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources\Orders\Pages;
 
+use App\Enums\OrderStatus;
 use App\Filament\Resources\Orders\OrderResource;
 use App\Models\Order;
-use App\OrderStatus;
 use App\Services\OrderFinalizer;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;

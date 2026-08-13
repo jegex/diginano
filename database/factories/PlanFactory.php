@@ -2,10 +2,10 @@
 
 namespace Database\Factories;
 
-use App\BillingPeriod;
+use App\Enums\BillingPeriod;
+use App\Enums\PlanPricing;
 use App\Models\Plan;
 use App\Models\Product;
-use App\PlanPricing;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

@@ -2,9 +2,9 @@
 
 namespace App\Livewire\Concerns;
 
+use App\Enums\PaymentMethodType;
 use App\Models\Order;
 use App\Models\PaymentMethod;
-use App\PaymentMethodType;
 use App\Services\CryptomusGateway;
 use App\Services\MidtransGateway;
 

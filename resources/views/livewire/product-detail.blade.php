@@ -32,7 +32,7 @@
                             </p>
                         </div>
                         <p class="mt-1 text-sm text-gray-500">
-                            @if ($plan->pricing_mode === \App\PlanPricing::Subscription)
+                            @if ($plan->pricing_mode === \App\Enums\PlanPricing::Subscription)
                                 Per {{ $plan->periodLabel() }}
                             @else
                                 Bayar sekali — berlaku selamanya

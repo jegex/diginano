@@ -1,10 +1,10 @@
 <?php
 
+use App\Enums\PlanPricing;
 use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Filament\Resources\Products\RelationManagers\PlansRelationManager;
 use App\Models\Plan;
 use App\Models\Product;
-use App\PlanPricing;
 use Livewire\Livewire;
 
 use function Pest\Laravel\assertDatabaseHas;

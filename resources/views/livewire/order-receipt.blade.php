@@ -69,7 +69,7 @@
             </div>
         @endif
 
-        @if ($order->status === \App\OrderStatus::Pending && ($order->isMidtransPayment() || $order->isCryptomusPayment()))
+        @if ($order->status === \App\Enums\OrderStatus::Pending && ($order->isMidtransPayment() || $order->isCryptomusPayment()))
             <div class="mt-4 rounded-lg bg-gray-50 p-4">
                 <p class="text-sm text-gray-500">
                     Pesanan masih menunggu pembayaran. Klik tombol di bawah untuk melanjutkan pembayaran.

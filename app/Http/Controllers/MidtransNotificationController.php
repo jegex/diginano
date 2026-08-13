@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\OrderStatus;
 use App\Models\Order;
-use App\OrderStatus;
 use App\Services\MidtransGateway;
 use App\Services\OrderFinalizer;
 use Illuminate\Http\Request;

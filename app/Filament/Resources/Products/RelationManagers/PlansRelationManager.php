@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\Products\RelationManagers;
 
-use App\BillingPeriod;
-use App\PlanPricing;
+use App\Enums\BillingPeriod;
+use App\Enums\PlanPricing;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;

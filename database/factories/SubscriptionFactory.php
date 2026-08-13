@@ -2,12 +2,12 @@
 
 namespace Database\Factories;
 
-use App\BillingPeriod;
+use App\Enums\BillingPeriod;
+use App\Enums\SubscriptionStatus;
 use App\Models\Order;
 use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\User;
-use App\SubscriptionStatus;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 

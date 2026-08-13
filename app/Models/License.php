@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\SubscriptionStatus;
+use App\Enums\SubscriptionStatus;
 use Database\Factories\LicenseFactory;
 use DomainException;
 use Illuminate\Database\Eloquent\Attributes\Fillable;

@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\PaymentMethods\Schemas;
 
-use App\PaymentMethodType;
+use App\Enums\PaymentMethodType;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;

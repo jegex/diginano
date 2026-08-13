@@ -1,12 +1,12 @@
 <?php
 
-use App\BillingPeriod;
+use App\Enums\BillingPeriod;
+use App\Enums\PlanPricing;
 use App\Filament\Resources\Products\Pages\CreateProduct;
 use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Filament\Resources\Products\RelationManagers\PlansRelationManager;
 use App\Models\Plan;
 use App\Models\Product;
-use App\PlanPricing;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\Testing\TestAction;

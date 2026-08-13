@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Coupons\Schemas;
 
-use App\CouponType;
+use App\Enums\CouponType;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;

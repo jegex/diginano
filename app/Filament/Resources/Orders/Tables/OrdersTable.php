@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Orders\Tables;
 
-use App\OrderStatus;
+use App\Enums\OrderStatus;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;

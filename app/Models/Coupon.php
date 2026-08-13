@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\CouponType;
+use App\Enums\CouponType;
 use Database\Factories\CouponFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;

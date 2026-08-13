@@ -1,11 +1,11 @@
 <?php
 
+use App\Enums\SubscriptionStatus;
 use App\Models\Activation;
 use App\Models\License;
 use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\User;
-use App\SubscriptionStatus;
 
 use function Pest\Laravel\assertDatabaseCount;
 use function Pest\Laravel\assertDatabaseHas;
