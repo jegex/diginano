@@ -4,9 +4,10 @@ Before planning or editing, find the row whose globs match the file's path and r
 
 | Applies to | Rule file |
 | --- | --- |
-| app/Livewire/** | .ai/rules/livewire.md |
+| app/Livewire/**, app/Livewire/DownloadCenter.php | .ai/rules/livewire.md |
 | database/migrations/** | .ai/rules/migrations.md |
-| app/Models/** | .ai/rules/models.md |
+| app/Models/**, app/Models/Order.php, app/Models/Subscription.php, app/Models/Product.php | .ai/rules/models.md |
+| app/Filament/Resources/**/RelationManagers/** | .ai/rules/relation-managers.md |
 | app/Filament/Resources/** | .ai/rules/resources.md |
 | tests/** | .ai/rules/tests.md |
 | resources/views/** | .ai/rules/views.md |
