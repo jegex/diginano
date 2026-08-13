@@ -88,4 +88,14 @@ class Plan extends Model
     {
         return $this->isOnSale() ? (float) $this->sale_price : (float) $this->price;
     }
+
+    public function periodEndsAt(Carbon $from): Carbon
+    {
+        return match ($this->billing_period) {
+            BillingPeriod::Monthly => $from->copy()->addMonth(),
+            BillingPeriod::Quarterly => $from->copy()->addMonths(3),
+            BillingPeriod::Yearly => $from->copy()->addYear(),
+            default => $from->copy(),
+        };
+    }
 }
