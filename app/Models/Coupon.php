@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Enums\CouponType;
-use App\Models\Casts\MoneyCast;
 use Database\Factories\CouponFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;

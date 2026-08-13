@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Casts\MoneyCast;
+use App\Casts\MoneyCast;
 use Database\Factories\OrderItemFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

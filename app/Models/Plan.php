@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Enums\BillingPeriod;
 use App\Enums\PlanPricing;
-use App\Models\Casts\MoneyCast;
 use Database\Factories\PlanFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

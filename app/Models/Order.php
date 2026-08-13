@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethodType;
-use App\Models\Casts\MoneyCast;
 use Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
