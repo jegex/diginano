@@ -31,7 +31,7 @@
                     <div class="flex justify-between border-t border-gray-200 pt-2">
                         <dt class="font-medium text-gray-900">Total yang harus dibayar</dt>
                         <dd class="text-base font-semibold text-gray-900">
-                            {{ $order->settlement_currency->format($order->settlementAmount()) }}
+                            {{ $order->settlementCurrency()->format($order->settlementAmount()) }}
                         </dd>
                     </div>
                 </dl>
@@ -95,7 +95,7 @@
                         <p class="text-sm text-gray-500">Jumlah: {{ $item->quantity }}</p>
                     </div>
                     <p class="font-semibold">
-                        {{ $order->currency->format((float) $item->line_total_usd * (float) $order->exchange_rate) }}
+                        {{ $order->displayCurrency()->format((float) $item->line_total_usd * (float) $order->exchange_rate) }}
                     </p>
                 </div>
             @endforeach
@@ -104,17 +104,17 @@
         <div class="mt-6 space-y-1 border-t border-gray-100 pt-4 text-sm">
             <p class="flex justify-between text-gray-500">
                 <span>Subtotal</span>
-                <span>{{ $order->currency->format($order->subtotalInDisplay()) }}</span>
+                <span>{{ $order->displayCurrency()->format($order->subtotalInDisplay()) }}</span>
             </p>
             @if ((float) $order->discount_usd > 0)
                 <p class="flex justify-between text-green-600">
                     <span>Diskon</span>
-                    <span>-{{ $order->currency->format($order->discountInDisplay()) }}</span>
+                    <span>-{{ $order->displayCurrency()->format($order->discountInDisplay()) }}</span>
                 </p>
             @endif
             <p class="flex justify-between text-base font-semibold">
                 <span>Total</span>
-                <span>{{ $order->currency->format($order->totalInDisplay()) }}</span>
+                <span>{{ $order->displayCurrency()->format($order->totalInDisplay()) }}</span>
             </p>
         </div>
     </div>

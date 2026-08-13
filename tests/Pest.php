@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Currency;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -47,4 +48,29 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+/**
+ * Create the standard currency set — USD (default base), IDR and EUR — with
+ * configurable per-currency rates keyed by code. Idempotent: existing rows
+ * are never recreated, so it can be called repeatedly within one test.
+ *
+ * @param  array<string, float>  $rates
+ */
+function seedCurrencies(array $rates = []): void
+{
+    Currency::firstOrCreate(
+        ['code' => 'usd'],
+        ['name' => 'USD (US Dollar)', 'symbol' => '$', 'exchange_rate' => 1, 'decimal_places' => 2, 'is_enabled' => true, 'is_default' => true],
+    );
+
+    Currency::firstOrCreate(
+        ['code' => 'idr'],
+        ['name' => 'IDR (Rupiah)', 'symbol' => 'Rp', 'exchange_rate' => $rates['idr'] ?? 15000, 'decimal_places' => 0, 'is_enabled' => true, 'is_default' => false],
+    );
+
+    Currency::firstOrCreate(
+        ['code' => 'eur'],
+        ['name' => 'EUR (Euro)', 'symbol' => '€', 'exchange_rate' => $rates['eur'] ?? 0.9, 'decimal_places' => 2, 'is_enabled' => true, 'is_default' => false],
+    );
 }

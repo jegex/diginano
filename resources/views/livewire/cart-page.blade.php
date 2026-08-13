@@ -53,7 +53,7 @@
                             class="mt-1 rounded-lg border border-gray-300 px-3 py-2 text-sm"
                         >
                             @foreach ($currencies as $currency)
-                                <option value="{{ $currency->value }}">{{ $currency->label() }}</option>
+                                <option value="{{ $currency->code }}">{{ $currency->name }}</option>
                             @endforeach
                         </select>
                         @error('currency')
@@ -101,7 +101,7 @@
                 </div>
 
                 <div class="text-right">
-                    <p class="text-sm text-gray-500">Subtotal ({{ strtoupper($cart->displayCurrency()->value) }})</p>
+                    <p class="text-sm text-gray-500">Subtotal ({{ strtoupper($cart->displayCurrency()->code) }})</p>
                     <p class="mt-1 text-2xl font-semibold">
                         {{ $cart->displayCurrency()->format($cart->subtotalIn($cart->displayCurrency())) }}
                     </p>

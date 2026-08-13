@@ -2,10 +2,10 @@
 
 namespace App\Livewire;
 
-use App\DisplayCurrency;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Coupon;
+use App\Models\Currency;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
@@ -14,7 +14,7 @@ use Livewire\Component;
 #[Layout('layouts.app')]
 class CartPage extends Component
 {
-    public string $currency = DisplayCurrency::Usd->value;
+    public string $currency = 'usd';
 
     public ?string $couponCode = null;
 
@@ -31,7 +31,7 @@ class CartPage extends Component
             return;
         }
 
-        $this->currency = $user->display_currency->value;
+        $this->currency = $user->display_currency;
         $this->quantities = $this->cart()->items->mapWithKeys(
             fn (CartItem $item): array => [$item->id => $item->quantity],
         )->all();
@@ -53,7 +53,7 @@ class CartPage extends Component
         abort_unless(auth()->check(), 403);
 
         $this->validate([
-            'currency' => ['required', Rule::enum(DisplayCurrency::class)],
+            'currency' => ['required', Rule::in(Currency::query()->enabled()->pluck('code')->all())],
         ]);
 
         auth()->user()->update(['display_currency' => $this->currency]);
@@ -118,7 +118,7 @@ class CartPage extends Component
         return view('livewire.cart-page', [
             'cart' => $cart,
             'coupon' => $coupon,
-            'currencies' => DisplayCurrency::cases(),
+            'currencies' => Currency::query()->enabled()->orderByRaw('is_default DESC, code ASC')->get(),
         ]);
     }
 

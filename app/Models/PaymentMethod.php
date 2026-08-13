@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\DisplayCurrency;
 use App\PaymentMethodType;
 use Database\Factories\PaymentMethodFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -50,17 +49,17 @@ class PaymentMethod extends Model
      * manual transfers, always IDR for Midtrans, USD for Cryptomus (the
      * invoice is created in USD and the customer pays in the coin of choice).
      */
-    public function settlementCurrency(): DisplayCurrency
+    public function settlementCurrency(): Currency
     {
         if ($this->type === PaymentMethodType::Midtrans) {
-            return DisplayCurrency::Idr;
+            return Currency::required('idr');
         }
 
         if ($this->type === PaymentMethodType::Cryptomus) {
-            return DisplayCurrency::Usd;
+            return Currency::required('usd');
         }
 
-        return DisplayCurrency::from($this->config['bank_currency'] ?? DisplayCurrency::Idr->value);
+        return Currency::required((string) ($this->config['bank_currency'] ?? 'idr'));
     }
 
     public function midtransServerKey(): string

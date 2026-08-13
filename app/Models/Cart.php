@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\DisplayCurrency;
 use Database\Factories\CartFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -106,24 +105,24 @@ class Cart extends Model
         return round(max(0, $total), 2);
     }
 
-    public function couponDiscountIn(Coupon $coupon, DisplayCurrency $currency): float
+    public function couponDiscountIn(Coupon $coupon, Currency $currency): float
     {
-        return ExchangeRate::convert($this->couponDiscountUsd($coupon), $currency);
+        return $currency->convertUsd($this->couponDiscountUsd($coupon));
     }
 
-    public function totalIn(DisplayCurrency $currency, ?Coupon $coupon = null): float
+    public function totalIn(Currency $currency, ?Coupon $coupon = null): float
     {
-        return ExchangeRate::convert($this->totalUsd($coupon), $currency);
+        return $currency->convertUsd($this->totalUsd($coupon));
     }
 
-    public function subtotalIn(DisplayCurrency $currency): float
+    public function subtotalIn(Currency $currency): float
     {
-        return ExchangeRate::convert($this->subtotalUsd(), $currency);
+        return $currency->convertUsd($this->subtotalUsd());
     }
 
-    public function displayCurrency(): DisplayCurrency
+    public function displayCurrency(): Currency
     {
-        return $this->user->display_currency;
+        return Currency::fromCode($this->user->display_currency) ?? Currency::default();
     }
 
     public function totalQuantity(): int

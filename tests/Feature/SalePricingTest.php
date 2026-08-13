@@ -82,6 +82,7 @@ it('uses the sale price in the cart subtotal without a code', function () {
 });
 
 it('shows the sale price on the product page', function () {
+    seedCurrencies();
     $plan = Plan::factory()->create([
         'price' => 100,
         'sale_price' => 80,

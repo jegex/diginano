@@ -1,16 +1,16 @@
 <?php
 
-use App\DisplayCurrency;
 use App\Livewire\CartPage;
 use App\Livewire\ProductDetail;
 use App\Models\Cart;
-use App\Models\ExchangeRate;
+use App\Models\Currency;
 use App\Models\Plan;
 use App\Models\User;
 use DomainException;
 use Livewire\Livewire;
 
 it('shows the default USD price on the product page', function () {
+    seedCurrencies();
     $plan = Plan::factory()->create(['price' => 99.5]);
 
     Livewire::test(ProductDetail::class, ['product' => $plan->product])
@@ -19,7 +19,7 @@ it('shows the default USD price on the product page', function () {
 
 it('converts the product price to the customers display currency', function () {
     $user = User::factory()->create(['display_currency' => 'idr']);
-    ExchangeRate::factory()->create(['currency' => DisplayCurrency::Idr, 'rate' => 16000]);
+    seedCurrencies(['idr' => 16000]);
     $plan = Plan::factory()->create(['price' => 100]);
 
     Livewire::actingAs($user)
@@ -29,7 +29,7 @@ it('converts the product price to the customers display currency', function () {
 
 it('shows the cart subtotal in the customers display currency', function () {
     $user = User::factory()->create(['display_currency' => 'eur']);
-    ExchangeRate::factory()->create(['currency' => DisplayCurrency::Eur, 'rate' => 0.9]);
+    seedCurrencies(['eur' => 0.9]);
     $plan = Plan::factory()->create(['price' => 100]);
     Cart::for($user)->add($plan, 2);
 
@@ -40,7 +40,7 @@ it('shows the cart subtotal in the customers display currency', function () {
 
 it('lets a customer choose their display currency', function () {
     $user = User::factory()->create();
-    ExchangeRate::factory()->create(['currency' => DisplayCurrency::Idr, 'rate' => 16000]);
+    seedCurrencies(['idr' => 16000]);
 
     Livewire::actingAs($user)
         ->test(CartPage::class)
@@ -48,12 +48,12 @@ it('lets a customer choose their display currency', function () {
         ->call('changeCurrency')
         ->assertHasNoErrors();
 
-    expect($user->fresh()->display_currency)->toBe(DisplayCurrency::Idr);
+    expect($user->fresh()->display_currency)->toBe('idr');
 });
 
 it('re-renders the subtotal in the newly chosen currency', function () {
     $user = User::factory()->create();
-    ExchangeRate::factory()->create(['currency' => DisplayCurrency::Idr, 'rate' => 16000]);
+    seedCurrencies(['idr' => 16000]);
     $plan = Plan::factory()->create(['price' => 50]);
     Cart::for($user)->add($plan, 1);
 
@@ -75,6 +75,6 @@ it('rejects an invalid display currency', function () {
 });
 
 it('fails loudly when no exchange rate is configured for a chosen currency', function () {
-    expect(fn () => ExchangeRate::convert(10, DisplayCurrency::Eur))
+    expect(fn () => Currency::required('eur')->convertUsd(10))
         ->toThrow(DomainException::class);
 });

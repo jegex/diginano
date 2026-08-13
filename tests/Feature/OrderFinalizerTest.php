@@ -1,8 +1,6 @@
 <?php
 
-use App\DisplayCurrency;
 use App\Models\Cart;
-use App\Models\ExchangeRate;
 use App\Models\License;
 use App\Models\Order;
 use App\Models\PaymentMethod;
@@ -22,7 +20,7 @@ function makeOrder(User $user, array $plans = []): Order
     auth()->login($user);
     $cart = Cart::for($user);
     $method = PaymentMethod::factory()->create();
-    ExchangeRate::firstOrCreate(['currency' => DisplayCurrency::Idr], ['rate' => 15000]);
+    seedCurrencies();
 
     foreach ($plans as [$plan, $qty]) {
         $cart->add($plan, $qty);

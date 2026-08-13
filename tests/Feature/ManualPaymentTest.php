@@ -1,9 +1,7 @@
 <?php
 
-use App\DisplayCurrency;
 use App\Livewire\OrderReceipt;
 use App\Models\Cart;
-use App\Models\ExchangeRate;
 use App\Models\Order;
 use App\Models\OrderProof;
 use App\Models\PaymentMethod;
@@ -25,7 +23,7 @@ function makeManualOrder(User $user): Order
     $cart = Cart::for($user);
     $plan = Plan::factory()->create(['price' => 100]);
     $method = PaymentMethod::factory()->manual()->create();
-    ExchangeRate::factory()->create(['currency' => DisplayCurrency::Idr, 'rate' => 15000]);
+    seedCurrencies();
     $cart->add($plan, 1);
 
     return Order::checkout($cart, $method);
@@ -37,7 +35,7 @@ it('creates a manual order as awaiting confirmation', function () {
     $order = makeManualOrder($user);
 
     expect($order->status)->toBe(OrderStatus::AwaitingConfirmation)
-        ->and($order->settlement_currency)->toBe(DisplayCurrency::Idr)
+        ->and($order->settlement_currency)->toBe('idr')
         ->and($order->settlementAmount())->toBe(1500000.0);
 });
 

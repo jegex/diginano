@@ -27,7 +27,7 @@ class PaymentReceivedNotification extends Notification implements ShouldQueue
         return (new MailMessage)
             ->subject("Pembayaran diterima — {$this->order->number}")
             ->greeting('Halo '.$this->order->user->name.',')
-            ->line("Pembayaran untuk pesanan {$this->order->number} sebesar {$this->order->currency->format($this->order->totalInDisplay())} telah kami terima.")
+            ->line("Pembayaran untuk pesanan {$this->order->number} sebesar {$this->order->displayCurrency()->format($this->order->totalInDisplay())} telah kami terima.")
             ->line('Lisensi Anda sudah diterbitkan dan dapat digunakan sekarang.')
             ->action('Lihat Resi', route('orders.show', $this->order))
             ->line('Terima kasih telah berbelanja di Diginano!');

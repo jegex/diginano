@@ -106,6 +106,7 @@ it('combines an active sale with a coupon', function () {
 });
 
 it('applies a coupon on the cart page', function () {
+    seedCurrencies();
     $user = User::factory()->create();
     $plan = Plan::factory()->create(['price' => 100]);
     Cart::for($user)->add($plan, 1);
@@ -122,6 +123,7 @@ it('applies a coupon on the cart page', function () {
 });
 
 it('rejects an unknown coupon code on the cart page', function () {
+    seedCurrencies();
     $user = User::factory()->create();
     $plan = Plan::factory()->create(['price' => 100]);
     Cart::for($user)->add($plan, 1);
@@ -134,6 +136,7 @@ it('rejects an unknown coupon code on the cart page', function () {
 });
 
 it('lets a customer remove an applied coupon', function () {
+    seedCurrencies();
     $user = User::factory()->create();
     $plan = Plan::factory()->create(['price' => 100]);
     Cart::for($user)->add($plan, 1);
@@ -150,6 +153,7 @@ it('lets a customer remove an applied coupon', function () {
 });
 
 it('applies a product-scoped coupon only to eligible items in the cart', function () {
+    seedCurrencies();
     $user = User::factory()->create();
     $eligibleProduct = Product::factory()->create();
     $eligible = Plan::factory()->create(['product_id' => $eligibleProduct->id, 'price' => 100]);

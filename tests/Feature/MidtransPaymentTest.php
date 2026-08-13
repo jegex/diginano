@@ -1,10 +1,8 @@
 <?php
 
-use App\DisplayCurrency;
 use App\Livewire\CheckoutPage;
 use App\Livewire\OrderReceipt;
 use App\Models\Cart;
-use App\Models\ExchangeRate;
 use App\Models\Order;
 use App\Models\PaymentMethod;
 use App\Models\Plan;
@@ -23,7 +21,7 @@ function makeMidtransOrder(User $user, array $plans = []): Order
     auth()->login($user);
     $cart = Cart::for($user);
     $method = PaymentMethod::factory()->midtrans()->create();
-    ExchangeRate::firstOrCreate(['currency' => DisplayCurrency::Idr], ['rate' => 15000]);
+    seedCurrencies();
 
     foreach ($plans as [$plan, $qty]) {
         $cart->add($plan, $qty);
@@ -41,7 +39,7 @@ it('redirects to the Snap hosted page after checkout and stores the token', func
     $user = User::factory()->create();
     $plan = Plan::factory()->create(['price' => 100]);
     $method = PaymentMethod::factory()->midtrans()->create();
-    ExchangeRate::factory()->create(['currency' => DisplayCurrency::Idr, 'rate' => 15000]);
+    seedCurrencies();
     Cart::for($user)->add($plan, 1);
 
     Http::fake([
@@ -62,7 +60,7 @@ it('redirects to the Snap hosted page after checkout and stores the token', func
 
     expect($order->status)->toBe(OrderStatus::Pending)
         ->and($order->isMidtransPayment())->toBeTrue()
-        ->and($order->settlement_currency)->toBe(DisplayCurrency::Idr)
+        ->and($order->settlement_currency)->toBe('idr')
         ->and($order->snap_token)->toBe('snap-token')
         ->and($order->snap_redirect_url)->toBe('https://app.sandbox.midtrans.com/snap/v4/transactions/xyz');
 
@@ -234,7 +232,7 @@ it('ignores notifications for non-midtrans orders', function () {
     auth()->login($user);
     $cart = Cart::for($user);
     $method = PaymentMethod::factory()->manual()->create();
-    ExchangeRate::factory()->create(['currency' => DisplayCurrency::Idr, 'rate' => 15000]);
+    seedCurrencies();
     $cart->add(Plan::factory()->create(['price' => 100]), 1);
     $order = Order::checkout($cart, $method);
     $payload = [

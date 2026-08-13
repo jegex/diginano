@@ -1,6 +1,5 @@
 <?php
 
-use App\DisplayCurrency;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Plan;
@@ -10,12 +9,13 @@ use App\OrderStatus;
 use function Pest\Laravel\get;
 
 it('lets the order owner view their receipt', function () {
+    seedCurrencies();
     $user = User::factory()->create();
     $plan = Plan::factory()->create(['price' => 50]);
     $order = Order::factory()->create([
         'user_id' => $user->id,
         'status' => OrderStatus::Completed,
-        'currency' => DisplayCurrency::Usd,
+        'currency' => 'usd',
     ]);
     OrderItem::factory()->forPlan($plan)->create([
         'order_id' => $order->id,
@@ -50,6 +50,7 @@ it('forbids guests from viewing the receipt', function () {
 });
 
 it('shows the pending payment reminder on an unpaid order', function () {
+    seedCurrencies();
     $user = User::factory()->create();
     $order = Order::factory()->create([
         'user_id' => $user->id,

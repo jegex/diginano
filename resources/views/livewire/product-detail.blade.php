@@ -1,5 +1,5 @@
 <div>
-    @php($currency = auth()->user()?->display_currency ?? \App\DisplayCurrency::Usd)
+    @php($currency = \App\Models\Currency::fromCode(auth()->user()?->display_currency ?? '') ?? \App\Models\Currency::default())
 
     <nav class="text-sm text-gray-500">
         <a href="{{ route('catalog') }}" class="hover:text-gray-900">Katalog</a>
@@ -25,10 +25,10 @@
                             <p class="text-lg font-semibold">
                                 @if ($plan->isOnSale())
                                     <span class="mr-2 text-sm text-gray-400 line-through">
-                                        {{ $currency->format(\App\Models\ExchangeRate::convert((float) $plan->price, $currency)) }}
+                                        {{ $currency->format($currency->convertUsd((float) $plan->price)) }}
                                     </span>
                                 @endif
-                                {{ $currency->format(\App\Models\ExchangeRate::convert($plan->effectivePriceUsd(), $currency)) }}
+                                {{ $currency->format($currency->convertUsd($plan->effectivePriceUsd())) }}
                             </p>
                         </div>
                         <p class="mt-1 text-sm text-gray-500">

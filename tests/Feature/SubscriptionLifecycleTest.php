@@ -1,9 +1,7 @@
 <?php
 
-use App\DisplayCurrency;
 use App\Livewire\SubscriptionsPage;
 use App\Models\Cart;
-use App\Models\ExchangeRate;
 use App\Models\License;
 use App\Models\Order;
 use App\Models\PaymentMethod;
@@ -22,7 +20,7 @@ function makeRenewalOrder(Subscription $subscription, ?PaymentMethod $method = n
 {
     auth()->login($subscription->user);
     $method ??= PaymentMethod::factory()->manual()->create();
-    ExchangeRate::firstOrCreate(['currency' => DisplayCurrency::Idr], ['rate' => 15000]);
+    seedCurrencies();
 
     return Order::renewal($subscription, $method);
 }
@@ -67,7 +65,7 @@ it('uses pending status and the gateway currency for non-manual renewal orders',
     $order = makeRenewalOrder($subscription, $method);
 
     expect($order->status)->toBe(OrderStatus::Pending)
-        ->and($order->settlement_currency)->toBe(DisplayCurrency::Idr)
+        ->and($order->settlement_currency)->toBe('idr')
         ->and($order->isMidtransPayment())->toBeTrue();
 });
 
@@ -174,7 +172,7 @@ it('reactivates a cancelled subscription when a new order is completed', functio
     auth()->login($user);
     $cart = Cart::for($user);
     $method = PaymentMethod::factory()->manual()->create();
-    ExchangeRate::firstOrCreate(['currency' => DisplayCurrency::Idr], ['rate' => 15000]);
+    seedCurrencies();
     $cart->add($plan, 1);
     $order = Order::checkout($cart, $method);
 

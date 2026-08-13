@@ -53,7 +53,7 @@
                 <aside class="h-fit rounded-xl border border-gray-200 p-5">
                     <p class="text-sm text-gray-500">Ringkasan</p>
 
-                    <p class="mt-3 text-sm text-gray-500">Subtotal ({{ strtoupper($cart->displayCurrency()->value) }})</p>
+                    <p class="mt-3 text-sm text-gray-500">Subtotal ({{ strtoupper($cart->displayCurrency()->code) }})</p>
                     <p class="mt-1 text-2xl font-semibold">
                         {{ $cart->displayCurrency()->format($cart->subtotalIn($cart->displayCurrency())) }}
                     </p>

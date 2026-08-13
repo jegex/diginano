@@ -27,7 +27,7 @@ class OrderConfirmationNotification extends Notification implements ShouldQueue
         return (new MailMessage)
             ->subject("Konfirmasi pesanan {$this->order->number}")
             ->greeting('Halo '.$this->order->user->name.',')
-            ->line("Pesanan Anda {$this->order->number} telah kami terima dengan total {$this->order->currency->format($this->order->totalInDisplay())}.")
+            ->line("Pesanan Anda {$this->order->number} telah kami terima dengan total {$this->order->displayCurrency()->format($this->order->totalInDisplay())}.")
             ->line('Anda dapat mengunduh produk Anda kapan saja dari pusat unduhan.')
             ->action('Buka Pusat Unduhan', route('downloads'))
             ->line('Terima kasih telah berbelanja di Diginano!');

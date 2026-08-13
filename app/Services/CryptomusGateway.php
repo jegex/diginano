@@ -23,7 +23,7 @@ class CryptomusGateway
     {
         $body = [
             'amount' => number_format($order->settlementAmount(), 2, '.', ''),
-            'currency' => strtoupper($order->settlement_currency->value),
+            'currency' => strtoupper($order->settlement_currency),
             'order_id' => $order->number,
             'url_return' => route('orders.show', $order),
             'url_success' => route('orders.show', $order),

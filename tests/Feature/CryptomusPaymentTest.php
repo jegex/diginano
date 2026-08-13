@@ -1,10 +1,8 @@
 <?php
 
-use App\DisplayCurrency;
 use App\Livewire\CheckoutPage;
 use App\Livewire\OrderReceipt;
 use App\Models\Cart;
-use App\Models\ExchangeRate;
 use App\Models\Order;
 use App\Models\PaymentMethod;
 use App\Models\Plan;
@@ -23,6 +21,7 @@ const CRYPTOMUS_PAYMENT_API_KEY = 'api-key';
 function makeCryptomusOrder(User $user, array $plans = []): Order
 {
     auth()->login($user);
+    seedCurrencies();
     $cart = Cart::for($user);
     $method = PaymentMethod::factory()->cryptomus()->create();
 
@@ -44,6 +43,7 @@ function cryptomusSignature(array $payload): string
 }
 
 it('redirects to the Cryptomus payment page after checkout and stores the invoice reference', function () {
+    seedCurrencies();
     $user = User::factory()->create();
     $plan = Plan::factory()->create(['price' => 100]);
     $method = PaymentMethod::factory()->cryptomus()->create();
@@ -71,7 +71,7 @@ it('redirects to the Cryptomus payment page after checkout and stores the invoic
 
     expect($order->status)->toBe(OrderStatus::Pending)
         ->and($order->isCryptomusPayment())->toBeTrue()
-        ->and($order->settlement_currency)->toBe(DisplayCurrency::Usd)
+        ->and($order->settlement_currency)->toBe('usd')
         ->and($order->provider_reference)->toBe('invoice-uuid-123')
         ->and($order->provider_status)->toBe('check');
 
@@ -260,7 +260,7 @@ it('ignores notifications for non-cryptomus orders', function () {
     auth()->login($user);
     $cart = Cart::for($user);
     $method = PaymentMethod::factory()->manual()->create();
-    ExchangeRate::factory()->create(['currency' => DisplayCurrency::Idr, 'rate' => 15000]);
+    seedCurrencies();
     $cart->add(Plan::factory()->create(['price' => 100]), 1);
     $order = Order::checkout($cart, $method);
     $payload = [

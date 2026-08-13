@@ -2,10 +2,10 @@
 
 namespace App\Livewire;
 
-use App\DisplayCurrency;
 use App\Livewire\Concerns\HandlesPaymentRedirect;
 use App\Models\Cart;
 use App\Models\Coupon;
+use App\Models\Currency;
 use App\Models\Order;
 use App\Models\PaymentMethod;
 use Illuminate\Validation\Rule;
@@ -18,7 +18,7 @@ class CheckoutPage extends Component
 {
     use HandlesPaymentRedirect;
 
-    public string $currency = DisplayCurrency::Usd->value;
+    public string $currency = 'usd';
 
     public ?int $paymentMethodId = null;
 
@@ -30,7 +30,7 @@ class CheckoutPage extends Component
             return;
         }
 
-        $this->currency = $user->display_currency->value;
+        $this->currency = $user->display_currency;
 
         $firstEnabled = PaymentMethod::query()->enabled()->orderBy('id')->value('id');
 
@@ -78,7 +78,7 @@ class CheckoutPage extends Component
             'cart' => $cart,
             'coupon' => $this->couponFromSession(),
             'paymentMethods' => PaymentMethod::query()->enabled()->get(),
-            'currencies' => DisplayCurrency::cases(),
+            'currencies' => Currency::query()->enabled()->orderByRaw('is_default DESC, code ASC')->get(),
         ]);
     }
 

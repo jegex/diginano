@@ -1,6 +1,5 @@
 <?php
 
-use App\DisplayCurrency;
 use App\Filament\Resources\Customers\Pages\ListCustomers;
 use App\Filament\Resources\Customers\Pages\ViewCustomer;
 use App\Models\User;
@@ -20,7 +19,7 @@ it('shows customer details to the admin', function () {
     $customer = User::factory()->create([
         'name' => 'John Doe',
         'email' => 'john@example.com',
-        'display_currency' => DisplayCurrency::Idr,
+        'display_currency' => 'idr',
     ]);
 
     Livewire::test(ViewCustomer::class, ['record' => $customer->getRouteKey()])

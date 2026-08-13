@@ -12,6 +12,8 @@ use function Pest\Laravel\assertDatabaseCount;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertDatabaseMissing;
 
+beforeEach(fn () => seedCurrencies());
+
 it('lets a customer add a plan with quantity to their cart', function () {
     $user = User::factory()->create();
     $plan = Plan::factory()->create();

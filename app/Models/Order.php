@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\DisplayCurrency;
 use App\OrderStatus;
 use App\PaymentMethodType;
 use Database\Factories\OrderFactory;
@@ -23,9 +22,9 @@ use Illuminate\Support\Str;
  * @property string $subtotal_usd
  * @property string $discount_usd
  * @property string $total_usd
- * @property DisplayCurrency $currency
+ * @property string $currency
  * @property string $exchange_rate
- * @property DisplayCurrency|null $settlement_currency
+ * @property string|null $settlement_currency
  * @property string|null $settlement_exchange_rate
  * @property string|null $snap_token
  * @property string|null $snap_redirect_url
@@ -52,12 +51,10 @@ class Order extends Model
     {
         return [
             'status' => OrderStatus::class,
-            'currency' => DisplayCurrency::class,
             'subtotal_usd' => 'decimal:2',
             'discount_usd' => 'decimal:2',
             'total_usd' => 'decimal:2',
             'exchange_rate' => 'decimal:6',
-            'settlement_currency' => DisplayCurrency::class,
             'settlement_exchange_rate' => 'decimal:6',
             'completed_at' => 'datetime',
         ];
@@ -124,12 +121,12 @@ class Order extends Model
         abort_if($cart->isEmpty(), 422, 'Keranjang kosong, tidak bisa checkout.');
         abort_if($cart->user_id !== auth()->id(), 403);
 
-        $currency = $cart->user->display_currency;
-        $rate = ExchangeRate::rateFor($currency);
+        $currency = Currency::required($cart->user->display_currency);
+        $rate = $currency->rate();
 
         $isManual = $paymentMethod->type === PaymentMethodType::Manual;
         $settlementCurrency = $paymentMethod->settlementCurrency();
-        $settlementRate = ExchangeRate::rateFor($settlementCurrency);
+        $settlementRate = $settlementCurrency->rate();
 
         return DB::transaction(function () use ($cart, $paymentMethod, $coupon, $currency, $rate, $isManual, $settlementCurrency, $settlementRate): self {
             /** @var self $order */
@@ -140,9 +137,9 @@ class Order extends Model
                 'subtotal_usd' => $cart->subtotalUsd(),
                 'discount_usd' => $coupon !== null ? $cart->couponDiscountUsd($coupon) : 0,
                 'total_usd' => $cart->totalUsd($coupon),
-                'currency' => $currency,
+                'currency' => $currency->code,
                 'exchange_rate' => $rate,
-                'settlement_currency' => $settlementCurrency,
+                'settlement_currency' => $settlementCurrency->code,
                 'settlement_exchange_rate' => $settlementRate,
                 'coupon_id' => $coupon?->id,
                 'payment_method_id' => $paymentMethod->id,
@@ -175,12 +172,12 @@ class Order extends Model
         abort_if($subscription->user_id !== auth()->id(), 403);
 
         $plan = $subscription->plan;
-        $currency = $subscription->user->display_currency;
-        $rate = ExchangeRate::rateFor($currency);
+        $currency = Currency::required($subscription->user->display_currency);
+        $rate = $currency->rate();
 
         $isManual = $paymentMethod->type === PaymentMethodType::Manual;
         $settlementCurrency = $paymentMethod->settlementCurrency();
-        $settlementRate = ExchangeRate::rateFor($settlementCurrency);
+        $settlementRate = $settlementCurrency->rate();
 
         return DB::transaction(function () use ($subscription, $paymentMethod, $plan, $currency, $rate, $isManual, $settlementCurrency, $settlementRate): self {
             /** @var self $order */
@@ -191,9 +188,9 @@ class Order extends Model
                 'subtotal_usd' => $plan->price,
                 'discount_usd' => 0,
                 'total_usd' => $plan->price,
-                'currency' => $currency,
+                'currency' => $currency->code,
                 'exchange_rate' => $rate,
-                'settlement_currency' => $settlementCurrency,
+                'settlement_currency' => $settlementCurrency->code,
                 'settlement_exchange_rate' => $settlementRate,
                 'payment_method_id' => $paymentMethod->id,
                 'subscription_id' => $subscription->id,
@@ -244,6 +241,24 @@ class Order extends Model
     public function statusLabel(): string
     {
         return $this->status->label();
+    }
+
+    /**
+     * The currency used for display, falling back to the default currency
+     * when the stored code no longer exists.
+     */
+    public function displayCurrency(): Currency
+    {
+        return Currency::fromCode($this->currency) ?? Currency::default();
+    }
+
+    /**
+     * The gateway's settlement currency, falling back to the default currency
+     * when the stored code no longer exists.
+     */
+    public function settlementCurrency(): Currency
+    {
+        return Currency::fromCode($this->settlement_currency ?? '') ?? Currency::default();
     }
 
     public function subtotalInDisplay(): float

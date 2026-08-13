@@ -6,6 +6,8 @@ use App\Models\Plan;
 use App\Models\Product;
 use Livewire\Livewire;
 
+beforeEach(fn () => seedCurrencies());
+
 it('lists published products on the catalog', function () {
     $published = Product::factory()->create(['name' => 'Awesome Script']);
     $unpublished = Product::factory()->create(['is_published' => false, 'name' => 'Hidden Product']);
