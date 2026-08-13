@@ -18,7 +18,7 @@ class ExpireOrders extends Command
     public function handle(): int
     {
         $expired = Order::query()
-            ->where('status', OrderStatus::Pending)
+            ->whereIn('status', [OrderStatus::Pending, OrderStatus::AwaitingConfirmation])
             ->where('created_at', '<', now()->subHours(24))
             ->update(['status' => OrderStatus::Expired]);
 

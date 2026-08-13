@@ -12,6 +12,7 @@ use App\Models\PaymentMethod;
 use App\Models\Plan;
 use App\Models\User;
 use App\OrderStatus;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
 use Livewire\Livewire;
 
@@ -26,8 +27,16 @@ it('prompts a guest to log in before checking out', function () {
 it('lets a customer place an order from their cart', function () {
     $user = User::factory()->create();
     $plan = Plan::factory()->create(['price' => 100]);
-    $method = PaymentMethod::factory()->create();
+    $method = PaymentMethod::factory()->midtrans()->create();
+    ExchangeRate::factory()->create(['currency' => DisplayCurrency::Idr, 'rate' => 15000]);
     Cart::for($user)->add($plan, 2);
+
+    Http::fake([
+        'app.sandbox.midtrans.com/*' => Http::response([
+            'token' => 'snap-token',
+            'redirect_url' => 'https://app.sandbox.midtrans.com/snap/v4/transactions/xyz',
+        ], 201),
+    ]);
 
     Livewire::actingAs($user)
         ->test(CheckoutPage::class)
@@ -43,7 +52,9 @@ it('lets a customer place an order from their cart', function () {
         ->and($order->discount_usd)->toBe('0.00')
         ->and($order->total_usd)->toBe('200.00')
         ->and($order->currency)->toBe(DisplayCurrency::Usd)
-        ->and($order->payment_method_id)->toBe($method->id);
+        ->and($order->payment_method_id)->toBe($method->id)
+        ->and($order->snap_token)->toBe('snap-token')
+        ->and($order->snap_redirect_url)->toBe('https://app.sandbox.midtrans.com/snap/v4/transactions/xyz');
 
     assertDatabaseHas(OrderItem::class, [
         'order_id' => $order->id,
@@ -56,13 +67,43 @@ it('lets a customer place an order from their cart', function () {
     assertDatabaseCount(CartItem::class, 0);
 });
 
+it('moves a manual order to awaiting confirmation and snapshots the bank amount', function () {
+    $user = User::factory()->create();
+    $plan = Plan::factory()->create(['price' => 100]);
+    $method = PaymentMethod::factory()->manual()->create();
+    ExchangeRate::factory()->create(['currency' => DisplayCurrency::Idr, 'rate' => 15000]);
+    Cart::for($user)->add($plan, 1);
+
+    Livewire::actingAs($user)
+        ->test(CheckoutPage::class)
+        ->set('paymentMethodId', $method->id)
+        ->call('checkout')
+        ->assertHasNoErrors()
+        ->assertRedirect();
+
+    $order = Order::query()->where('user_id', $user->id)->firstOrFail();
+
+    expect($order->status)->toBe(OrderStatus::AwaitingConfirmation)
+        ->and($order->settlement_currency)->toBe(DisplayCurrency::Idr)
+        ->and($order->settlement_exchange_rate)->toBe('15000.000000')
+        ->and($order->settlementAmount())->toBe(1500000.0);
+});
+
 it('applies a coupon from the session to the order', function () {
     $user = User::factory()->create();
     $plan = Plan::factory()->create(['price' => 100]);
     $coupon = Coupon::factory()->percentage()->create(['value' => 10]);
-    $method = PaymentMethod::factory()->create();
+    $method = PaymentMethod::factory()->midtrans()->create();
+    ExchangeRate::factory()->create(['currency' => DisplayCurrency::Idr, 'rate' => 15000]);
     Cart::for($user)->add($plan, 1);
     Session::put('applied_coupon_code', $coupon->code);
+
+    Http::fake([
+        'app.sandbox.midtrans.com/*' => Http::response([
+            'token' => 'snap-token',
+            'redirect_url' => 'https://app.sandbox.midtrans.com/snap/v4/transactions/xyz',
+        ], 201),
+    ]);
 
     Livewire::actingAs($user)
         ->test(CheckoutPage::class)

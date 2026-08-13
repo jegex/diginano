@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Orders\Schemas;
 
+use App\Models\Order;
+use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
@@ -40,6 +42,20 @@ class OrderInfolist
                     ->label('Completed')
                     ->dateTime()
                     ->placeholder('—'),
+                RepeatableEntry::make('proofs')
+                    ->label('Bukti Pembayaran')
+                    ->schema([
+                        ImageEntry::make('file_path')
+                            ->label('File')
+                            ->disk('public')
+                            ->height(80),
+                        TextEntry::make('original_name')
+                            ->label('Nama File'),
+                        TextEntry::make('submitted_at')
+                            ->label('Diunggah')
+                            ->dateTime(),
+                    ])
+                    ->visible(fn (Order $record): bool => $record->proofs->isNotEmpty()),
                 RepeatableEntry::make('items')
                     ->label('Items')
                     ->schema([

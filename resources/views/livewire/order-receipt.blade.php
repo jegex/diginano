@@ -11,6 +11,79 @@
     <div class="mt-6 rounded-xl border border-gray-200 p-5">
         <p class="text-sm text-gray-500">Metode pembayaran</p>
         <p class="mt-1 font-medium">{{ $order->paymentMethod?->name ?? 'Belum ditentukan' }}</p>
+
+        @if ($order->status->isAwaitingConfirmation() && $order->isManualPayment())
+            <div class="mt-4 rounded-lg bg-gray-50 p-4">
+                <p class="text-sm font-semibold text-gray-900">Transfer ke rekening berikut</p>
+                <dl class="mt-2 space-y-1 text-sm">
+                    <div class="flex justify-between">
+                        <dt class="text-gray-500">Bank</dt>
+                        <dd class="font-medium">{{ $bankDetails['bank_name'] }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-gray-500">Atas nama</dt>
+                        <dd class="font-medium">{{ $bankDetails['account_name'] }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-gray-500">No. Rekening</dt>
+                        <dd class="font-medium">{{ $bankDetails['account_number'] }}</dd>
+                    </div>
+                    <div class="flex justify-between border-t border-gray-200 pt-2">
+                        <dt class="font-medium text-gray-900">Total yang harus dibayar</dt>
+                        <dd class="text-base font-semibold text-gray-900">
+                            {{ $order->settlement_currency->format($order->settlementAmount()) }}
+                        </dd>
+                    </div>
+                </dl>
+            </div>
+
+            @if ($order->proofs->isNotEmpty())
+                <div class="mt-4">
+                    <p class="text-sm text-gray-500">Bukti pembayaran yang sudah diunggah: {{ $order->proofs->count() }}</p>
+                </div>
+            @endif
+
+            <div class="mt-4">
+                <p class="text-sm font-semibold text-gray-900">Upload bukti pembayaran</p>
+                <p class="mt-1 text-sm text-gray-500">Setelah transfer, unggah bukti transfer Anda untuk dikonfirmasi admin.</p>
+
+                <form wire:submit="submitProof" class="mt-3 flex flex-col gap-3 sm:flex-row">
+                    <input
+                        type="file"
+                        wire:model="proof"
+                        accept=".jpg,.jpeg,.png,.pdf"
+                        class="block w-full text-sm text-gray-700 file:mr-3 file:rounded-lg file:border-0 file:bg-gray-900 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white"
+                    >
+                    <button
+                        type="submit"
+                        wire:loading.attr="disabled"
+                        class="shrink-0 rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-gray-700 disabled:opacity-50"
+                    >
+                        Unggah
+                    </button>
+                </form>
+
+                @error('proof')
+                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+        @endif
+
+        @if ($order->status === \App\OrderStatus::Pending && ($order->isMidtransPayment() || $order->isCryptomusPayment()))
+            <div class="mt-4 rounded-lg bg-gray-50 p-4">
+                <p class="text-sm text-gray-500">
+                    Pesanan masih menunggu pembayaran. Klik tombol di bawah untuk melanjutkan pembayaran.
+                </p>
+                <button
+                    type="button"
+                    wire:click="pay"
+                    wire:loading.attr="disabled"
+                    class="mt-3 rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-gray-700 disabled:opacity-50"
+                >
+                    Bayar Sekarang
+                </button>
+            </div>
+        @endif
     </div>
 
     <div class="mt-4 rounded-xl border border-gray-200 p-5">
