@@ -25,8 +25,7 @@ class CurrenciesTable
                     ->sortable(),
                 TextColumn::make('symbol'),
                 TextColumn::make('exchange_rate')
-                    ->label('Rate per 1 USD')
-                    ->formatStateUsing(fn (string $state): string => number_format((float) $state, 6))
+                    ->numeric(2)
                     ->sortable(),
                 TextColumn::make('decimal_places')
                     ->sortable(),

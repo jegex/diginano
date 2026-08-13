@@ -72,13 +72,15 @@ class Currency extends Model
      */
     public static function default(): Currency
     {
-        $currency = static::query()->where('is_default', true)->first();
+        return once(function () {
+            $currency = static::query()->where('is_default', true)->first();
 
-        if ($currency === null) {
-            throw new DomainException('No default currency configured.');
-        }
+            if ($currency === null) {
+                throw new DomainException('No default currency configured.');
+            }
 
-        return $currency;
+            return $currency;
+        });
     }
 
     public static function fromCode(string $code): ?Currency
