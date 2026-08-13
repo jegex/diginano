@@ -95,7 +95,7 @@
                         <p class="text-sm text-gray-500">Jumlah: {{ $item->quantity }}</p>
                     </div>
                     <p class="font-semibold">
-                        {{ $order->displayCurrency()->format((float) $item->line_total_usd * (float) $order->exchange_rate) }}
+                        {{ $order->displayCurrency()->format($item->line_total * (float) $order->exchange_rate) }}
                     </p>
                 </div>
             @endforeach
@@ -106,7 +106,7 @@
                 <span>Subtotal</span>
                 <span>{{ $order->displayCurrency()->format($order->subtotalInDisplay()) }}</span>
             </p>
-            @if ((float) $order->discount_usd > 0)
+            @if ($order->discount > 0)
                 <p class="flex justify-between text-green-600">
                     <span>Diskon</span>
                     <span>-{{ $order->displayCurrency()->format($order->discountInDisplay()) }}</span>

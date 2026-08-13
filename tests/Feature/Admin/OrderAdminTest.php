@@ -9,13 +9,13 @@ use App\Models\Plan;
 use Livewire\Livewire;
 
 it('lists orders for the admin', function () {
-    $order = Order::factory()->create(['total_usd' => 123.45]);
+    $order = Order::factory()->create(['total' => 123.45]);
 
     Livewire::test(ListOrders::class)
         ->assertCanSeeTableRecords([$order])
         ->assertTableColumnExists('number')
         ->assertTableColumnExists('status')
-        ->assertTableColumnExists('total_usd');
+        ->assertTableColumnExists('total');
 });
 
 it('filters orders by status', function () {
@@ -30,11 +30,11 @@ it('filters orders by status', function () {
 
 it('shows order details to the admin', function () {
     $plan = Plan::factory()->create(['price' => 50]);
-    $order = Order::factory()->create(['total_usd' => 100]);
+    $order = Order::factory()->create(['total' => 100]);
     OrderItem::factory()->forPlan($plan)->create([
         'order_id' => $order->id,
         'quantity' => 2,
-        'line_total_usd' => 100,
+        'line_total' => 100,
     ]);
 
     Livewire::test(ViewOrder::class, ['record' => $order->getRouteKey()])

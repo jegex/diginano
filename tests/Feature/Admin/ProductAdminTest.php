@@ -82,7 +82,7 @@ it('can create a one-time plan through the relation manager', function () {
         'name' => $plan->name,
         'pricing_mode' => PlanPricing::OneTime->value,
         'billing_period' => null,
-        'price' => $plan->price,
+        'price' => (int) round($plan->price * 100),
         'licenses_per_unit' => 3,
     ]);
 });

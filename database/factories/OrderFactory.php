@@ -23,9 +23,9 @@ class OrderFactory extends Factory
             'number' => 'ORD-'.strtoupper(fake()->unique()->bothify('??????')),
             'user_id' => User::factory(),
             'status' => OrderStatus::Pending,
-            'subtotal_usd' => fake()->randomFloat(2, 10, 500),
-            'discount_usd' => 0,
-            'total_usd' => 0,
+            'subtotal' => fake()->randomFloat(2, 10, 500),
+            'discount' => 0,
+            'total' => 0,
             'currency' => 'usd',
             'exchange_rate' => 1,
         ];

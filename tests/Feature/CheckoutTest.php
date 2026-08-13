@@ -46,9 +46,9 @@ it('lets a customer place an order from their cart', function () {
     $order = Order::query()->where('user_id', $user->id)->firstOrFail();
 
     expect($order->status)->toBe(OrderStatus::Pending)
-        ->and($order->subtotal_usd)->toBe('200.00')
-        ->and($order->discount_usd)->toBe('0.00')
-        ->and($order->total_usd)->toBe('200.00')
+        ->and($order->subtotal)->toBe(200.0)
+        ->and($order->discount)->toBe(0.0)
+        ->and($order->total)->toBe(200.0)
         ->and($order->currency)->toBe('usd')
         ->and($order->payment_method_id)->toBe($method->id)
         ->and($order->snap_token)->toBe('snap-token')
@@ -58,8 +58,8 @@ it('lets a customer place an order from their cart', function () {
         'order_id' => $order->id,
         'plan_id' => $plan->id,
         'quantity' => 2,
-        'unit_price_usd' => '100.00',
-        'line_total_usd' => '200.00',
+        'unit_price' => 10000,
+        'line_total' => 20000,
     ]);
 
     assertDatabaseCount(CartItem::class, 0);
@@ -112,8 +112,8 @@ it('applies a coupon from the session to the order', function () {
     $order = Order::query()->where('user_id', $user->id)->firstOrFail();
 
     expect($order->coupon_id)->toBe($coupon->id)
-        ->and($order->discount_usd)->toBe('10.00')
-        ->and($order->total_usd)->toBe('90.00');
+        ->and($order->discount)->toBe(10.0)
+        ->and($order->total)->toBe(90.0);
 
     expect(Session::get('applied_coupon_code'))->toBeNull();
 });
@@ -135,7 +135,7 @@ it('stores the display currency and exchange rate on the order', function () {
 
     expect($order->currency)->toBe('idr')
         ->and($order->exchange_rate)->toBe('15000.000000')
-        ->and($order->total_usd)->toBe('100.00');
+        ->and($order->total)->toBe(100.0);
 });
 
 it('requires selecting an enabled payment method', function () {

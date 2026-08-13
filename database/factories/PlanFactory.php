@@ -50,7 +50,7 @@ class PlanFactory extends Factory
     public function onSale(array $overrides = []): static
     {
         return $this->state(fn (array $attributes) => array_merge([
-            'sale_price' => (float) $attributes['price'] * 0.8,
+            'sale_price' => round((float) $attributes['price'] * 0.8, 2),
             'sale_starts_at' => now()->subDay(),
             'sale_ends_at' => now()->addDay(),
         ], $overrides));

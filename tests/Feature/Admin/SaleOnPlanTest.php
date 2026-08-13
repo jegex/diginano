@@ -33,7 +33,7 @@ it('can create a plan with an active sale', function () {
     assertDatabaseHas(Plan::class, [
         'product_id' => $product->id,
         'name' => 'Pro',
-        'sale_price' => '80.00',
+        'sale_price' => 8000,
     ]);
 });
 
@@ -82,5 +82,5 @@ it('can update a sale from the relation manager', function () {
         ->callMountedTableAction()
         ->assertHasNoTableActionErrors();
 
-    expect($plan->fresh()->sale_price)->toBe('75.00');
+    expect($plan->fresh()->sale_price)->toBe(75.0);
 });

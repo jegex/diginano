@@ -20,7 +20,7 @@ it('lets the order owner view their receipt', function () {
     OrderItem::factory()->forPlan($plan)->create([
         'order_id' => $order->id,
         'quantity' => 2,
-        'line_total_usd' => 100,
+        'line_total' => 100,
     ]);
 
     $this->actingAs($user);

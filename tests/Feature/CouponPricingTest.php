@@ -19,7 +19,7 @@ it('applies a global percentage coupon to the order total', function () {
 });
 
 it('applies a global fixed coupon to the order total', function () {
-    $coupon = Coupon::factory()->fixed()->create(['value' => 25]);
+    $coupon = Coupon::factory()->fixed()->create(['fixed_value' => 25]);
     $plan = Plan::factory()->create(['price' => 100]);
     $cart = Cart::for(User::factory()->create());
     $cart->add($plan, 1);
@@ -28,7 +28,7 @@ it('applies a global fixed coupon to the order total', function () {
 });
 
 it('does not let a fixed coupon exceed the eligible subtotal', function () {
-    $coupon = Coupon::factory()->fixed()->create(['value' => 500]);
+    $coupon = Coupon::factory()->fixed()->create(['fixed_value' => 500]);
     $plan = Plan::factory()->create(['price' => 100]);
     $cart = Cart::for(User::factory()->create());
     $cart->add($plan, 1);

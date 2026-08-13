@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\BillingPeriod;
 use App\Enums\PlanPricing;
+use App\Models\Casts\MoneyCast;
 use Database\Factories\PlanFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,8 +17,8 @@ use Illuminate\Support\Carbon;
  * @property int $product_id
  * @property string $name
  * @property PlanPricing $pricing_mode
- * @property string $price
- * @property string|null $sale_price
+ * @property float $price
+ * @property float|null $sale_price
  * @property Carbon|null $sale_starts_at
  * @property Carbon|null $sale_ends_at
  * @property BillingPeriod|null $billing_period
@@ -39,8 +40,8 @@ class Plan extends Model
         return [
             'pricing_mode' => PlanPricing::class,
             'billing_period' => BillingPeriod::class,
-            'price' => 'decimal:2',
-            'sale_price' => 'decimal:2',
+            'price' => MoneyCast::class,
+            'sale_price' => MoneyCast::class,
             'sale_starts_at' => 'datetime',
             'sale_ends_at' => 'datetime',
             'licenses_per_unit' => 'integer',
@@ -86,7 +87,7 @@ class Plan extends Model
 
     public function effectivePriceUsd(): float
     {
-        return $this->isOnSale() ? (float) $this->sale_price : (float) $this->price;
+        return $this->isOnSale() ? $this->sale_price : $this->price;
     }
 
     public function periodEndsAt(Carbon $from): Carbon

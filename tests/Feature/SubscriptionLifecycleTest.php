@@ -48,11 +48,11 @@ it('creates a single-item full-price renewal order with no coupon or sale', func
     expect($order->status)->toBe(OrderStatus::AwaitingConfirmation)
         ->and($order->subscription_id)->toBe($subscription->id)
         ->and($order->items)->toHaveCount(1)
-        ->and((float) $order->items->first()->unit_price_usd)->toBe(100.0)
-        ->and((float) $order->items->first()->line_total_usd)->toBe(100.0)
-        ->and((float) $order->subtotal_usd)->toBe(100.0)
-        ->and((float) $order->discount_usd)->toBe(0.0)
-        ->and((float) $order->total_usd)->toBe(100.0)
+        ->and($order->items->first()->unit_price)->toBe(100.0)
+        ->and($order->items->first()->line_total)->toBe(100.0)
+        ->and($order->subtotal)->toBe(100.0)
+        ->and($order->discount)->toBe(0.0)
+        ->and($order->total)->toBe(100.0)
         ->and($order->coupon_id)->toBeNull();
 });
 

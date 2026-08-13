@@ -38,6 +38,8 @@ class CouponFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'type' => CouponType::Fixed,
+            'value' => null,
+            'fixed_value' => fake()->randomFloat(2, 5, 100),
         ]);
     }
 

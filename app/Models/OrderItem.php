@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Casts\MoneyCast;
 use Database\Factories\OrderItemFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,13 +16,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $product_id
  * @property string $name
  * @property int $quantity
- * @property string $unit_price_usd
- * @property string $line_total_usd
+ * @property float $unit_price
+ * @property float $line_total
  * @property int $licenses_per_unit
  *
  * @method static OrderItemFactory factory()
  */
-#[Fillable(['order_id', 'plan_id', 'product_id', 'name', 'quantity', 'unit_price_usd', 'line_total_usd', 'licenses_per_unit'])]
+#[Fillable(['order_id', 'plan_id', 'product_id', 'name', 'quantity', 'unit_price', 'line_total', 'licenses_per_unit'])]
 class OrderItem extends Model
 {
     /** @use HasFactory<OrderItemFactory> */
@@ -34,8 +35,8 @@ class OrderItem extends Model
     {
         return [
             'quantity' => 'integer',
-            'unit_price_usd' => 'decimal:2',
-            'line_total_usd' => 'decimal:2',
+            'unit_price' => MoneyCast::class,
+            'line_total' => MoneyCast::class,
             'licenses_per_unit' => 'integer',
         ];
     }

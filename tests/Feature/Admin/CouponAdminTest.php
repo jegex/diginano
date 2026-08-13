@@ -33,7 +33,7 @@ it('can create a product-scoped single-use fixed coupon', function () {
         ->fillForm([
             'code' => 'FIXED5',
             'type' => CouponType::Fixed->value,
-            'value' => 5,
+            'fixed_value' => 5,
             'is_single_use' => true,
             'products' => [$product->id],
         ])
@@ -43,6 +43,7 @@ it('can create a product-scoped single-use fixed coupon', function () {
     assertDatabaseHas(Coupon::class, [
         'code' => 'FIXED5',
         'is_single_use' => true,
+        'fixed_value' => 500,
     ]);
 
     $coupon = Coupon::where('code', 'FIXED5')->firstOrFail();

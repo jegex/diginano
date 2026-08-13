@@ -23,10 +23,13 @@ class CouponsTable
                     ->badge()
                     ->formatStateUsing(fn (CouponType $state): string => $state->label()),
                 TextColumn::make('value')
-                    ->formatStateUsing(function (Coupon $record, string $state): string {
-                        return $record->type === CouponType::Percentage
-                            ? rtrim(rtrim(number_format((float) $state, 2), '0'), '.').'%'
-                            : '$'.number_format((float) $state, 2);
+                    ->label('Value')
+                    ->formatStateUsing(function (Coupon $record, ?string $state): string {
+                        if ($record->type === CouponType::Percentage) {
+                            return rtrim(rtrim(number_format((float) $state, 2), '0'), '.').'%';
+                        }
+
+                        return '$'.number_format($record->fixed_value ?? 0, 2);
                     }),
                 TextColumn::make('products_count')
                     ->label('Scope')

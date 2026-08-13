@@ -27,8 +27,8 @@ class OrderItemFactory extends Factory
             'product_id' => $plan->product_id,
             'name' => $plan->name,
             'quantity' => 1,
-            'unit_price_usd' => $plan->price,
-            'line_total_usd' => $plan->price,
+            'unit_price' => $plan->price,
+            'line_total' => $plan->price,
             'licenses_per_unit' => $plan->licenses_per_unit,
         ];
     }
@@ -42,8 +42,8 @@ class OrderItemFactory extends Factory
             'plan_id' => $plan->id,
             'product_id' => $plan->product_id,
             'name' => $plan->name,
-            'unit_price_usd' => $plan->effectivePriceUsd(),
-            'line_total_usd' => $plan->effectivePriceUsd(),
+            'unit_price' => $plan->effectivePriceUsd(),
+            'line_total' => $plan->effectivePriceUsd(),
             'licenses_per_unit' => $plan->licenses_per_unit,
         ]);
     }

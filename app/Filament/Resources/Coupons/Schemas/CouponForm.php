@@ -26,14 +26,22 @@ class CouponForm
                     ->required()
                     ->live(),
                 TextInput::make('value')
+                    ->label('Value (%)')
                     ->numeric()
-                    ->required()
+                    ->required(fn (Get $get): bool => $get('type') === CouponType::Percentage)
+                    ->minValue(0.01)
+                    ->maxValue(100)
+                    ->step('0.01')
+                    ->visible(fn (Get $get): bool => $get('type') === CouponType::Percentage),
+                TextInput::make('fixed_value')
+                    ->label('Value (USD)')
+                    ->numeric()
+                    ->required(fn (Get $get): bool => $get('type') === CouponType::Fixed)
                     ->minValue(0.01)
                     ->maxValue(99999999)
                     ->step('0.01')
-                    ->label(fn (Get $get): string => $get('type') === CouponType::Fixed->value
-                        ? 'Value (USD)'
-                        : 'Value (%)'),
+                    ->prefix('$')
+                    ->visible(fn (Get $get): bool => $get('type') === CouponType::Fixed),
                 Toggle::make('is_single_use')
                     ->label('Sekali pakai per pelanggan'),
                 CheckboxList::make('products')

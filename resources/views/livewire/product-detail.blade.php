@@ -25,7 +25,7 @@
                             <p class="text-lg font-semibold">
                                 @if ($plan->isOnSale())
                                     <span class="mr-2 text-sm text-gray-400 line-through">
-                                        {{ $currency->format($currency->convertUsd((float) $plan->price)) }}
+                                        {{ $currency->format($currency->convertUsd($plan->price)) }}
                                     </span>
                                 @endif
                                 {{ $currency->format($currency->convertUsd($plan->effectivePriceUsd())) }}

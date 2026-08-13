@@ -20,13 +20,13 @@ class OrderInfolist
                     ->label('Customer'),
                 TextEntry::make('status')
                     ->label('Status'),
-                TextEntry::make('subtotal_usd')
+                TextEntry::make('subtotal')
                     ->label('Subtotal')
                     ->money('USD'),
-                TextEntry::make('discount_usd')
+                TextEntry::make('discount')
                     ->label('Discount')
                     ->money('USD'),
-                TextEntry::make('total_usd')
+                TextEntry::make('total')
                     ->label('Total')
                     ->money('USD'),
                 TextEntry::make('paymentMethod.name')
@@ -63,10 +63,10 @@ class OrderInfolist
                             ->label('Plan'),
                         TextEntry::make('quantity')
                             ->label('Qty'),
-                        TextEntry::make('unit_price_usd')
+                        TextEntry::make('unit_price')
                             ->label('Unit Price')
                             ->money('USD'),
-                        TextEntry::make('line_total_usd')
+                        TextEntry::make('line_total')
                             ->label('Line Total')
                             ->money('USD'),
                     ]),

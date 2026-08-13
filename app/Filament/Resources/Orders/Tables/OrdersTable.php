@@ -36,7 +36,7 @@ class OrdersTable
                         default => 'gray',
                     })
                     ->sortable(),
-                TextColumn::make('total_usd')
+                TextColumn::make('total')
                     ->label('Total')
                     ->money('USD')
                     ->sortable(),

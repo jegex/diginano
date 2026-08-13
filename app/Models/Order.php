@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethodType;
+use App\Models\Casts\MoneyCast;
 use Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,9 +20,9 @@ use Illuminate\Support\Str;
  * @property string $number
  * @property int $user_id
  * @property OrderStatus $status
- * @property string $subtotal_usd
- * @property string $discount_usd
- * @property string $total_usd
+ * @property float $subtotal
+ * @property float $discount
+ * @property float $total
  * @property string $currency
  * @property string $exchange_rate
  * @property string|null $settlement_currency
@@ -38,7 +39,7 @@ use Illuminate\Support\Str;
  *
  * @method static OrderFactory factory()
  */
-#[Fillable(['number', 'user_id', 'status', 'subtotal_usd', 'discount_usd', 'total_usd', 'currency', 'exchange_rate', 'settlement_currency', 'settlement_exchange_rate', 'snap_token', 'snap_redirect_url', 'provider_reference', 'provider_status', 'payment_type', 'coupon_id', 'payment_method_id', 'subscription_id', 'completed_at'])]
+#[Fillable(['number', 'user_id', 'status', 'subtotal', 'discount', 'total', 'currency', 'exchange_rate', 'settlement_currency', 'settlement_exchange_rate', 'snap_token', 'snap_redirect_url', 'provider_reference', 'provider_status', 'payment_type', 'coupon_id', 'payment_method_id', 'subscription_id', 'completed_at'])]
 class Order extends Model
 {
     /** @use HasFactory<OrderFactory> */
@@ -51,9 +52,9 @@ class Order extends Model
     {
         return [
             'status' => OrderStatus::class,
-            'subtotal_usd' => 'decimal:2',
-            'discount_usd' => 'decimal:2',
-            'total_usd' => 'decimal:2',
+            'subtotal' => MoneyCast::class,
+            'discount' => MoneyCast::class,
+            'total' => MoneyCast::class,
             'exchange_rate' => 'decimal:6',
             'settlement_exchange_rate' => 'decimal:6',
             'completed_at' => 'datetime',
@@ -134,9 +135,9 @@ class Order extends Model
                 'number' => static::nextNumber(),
                 'user_id' => $cart->user_id,
                 'status' => $isManual ? OrderStatus::AwaitingConfirmation : OrderStatus::Pending,
-                'subtotal_usd' => $cart->subtotalUsd(),
-                'discount_usd' => $coupon !== null ? $cart->couponDiscountUsd($coupon) : 0,
-                'total_usd' => $cart->totalUsd($coupon),
+                'subtotal' => $cart->subtotalUsd(),
+                'discount' => $coupon !== null ? $cart->couponDiscountUsd($coupon) : 0,
+                'total' => $cart->totalUsd($coupon),
                 'currency' => $currency->code,
                 'exchange_rate' => $rate,
                 'settlement_currency' => $settlementCurrency->code,
@@ -150,8 +151,8 @@ class Order extends Model
                 'product_id' => $item->plan->product_id,
                 'name' => $item->plan->name,
                 'quantity' => $item->quantity,
-                'unit_price_usd' => $item->plan->effectivePriceUsd(),
-                'line_total_usd' => $item->lineTotalUsd(),
+                'unit_price' => $item->plan->effectivePriceUsd(),
+                'line_total' => $item->lineTotalUsd(),
                 'licenses_per_unit' => $item->plan->licenses_per_unit,
             ])->all();
 
@@ -185,9 +186,9 @@ class Order extends Model
                 'number' => static::nextNumber(),
                 'user_id' => $subscription->user_id,
                 'status' => $isManual ? OrderStatus::AwaitingConfirmation : OrderStatus::Pending,
-                'subtotal_usd' => $plan->price,
-                'discount_usd' => 0,
-                'total_usd' => $plan->price,
+                'subtotal' => $plan->price,
+                'discount' => 0,
+                'total' => $plan->price,
                 'currency' => $currency->code,
                 'exchange_rate' => $rate,
                 'settlement_currency' => $settlementCurrency->code,
@@ -201,8 +202,8 @@ class Order extends Model
                 'product_id' => $plan->product_id,
                 'name' => $plan->name,
                 'quantity' => 1,
-                'unit_price_usd' => $plan->price,
-                'line_total_usd' => $plan->price,
+                'unit_price' => $plan->price,
+                'line_total' => $plan->price,
                 'licenses_per_unit' => $plan->licenses_per_unit,
             ]);
 
@@ -235,7 +236,7 @@ class Order extends Model
      */
     public function settlementAmount(): float
     {
-        return (float) $this->total_usd * (float) $this->settlement_exchange_rate;
+        return $this->total * (float) $this->settlement_exchange_rate;
     }
 
     public function statusLabel(): string
@@ -263,17 +264,17 @@ class Order extends Model
 
     public function subtotalInDisplay(): float
     {
-        return (float) $this->subtotal_usd * (float) $this->exchange_rate;
+        return $this->subtotal * (float) $this->exchange_rate;
     }
 
     public function discountInDisplay(): float
     {
-        return (float) $this->discount_usd * (float) $this->exchange_rate;
+        return $this->discount * (float) $this->exchange_rate;
     }
 
     public function totalInDisplay(): float
     {
-        return (float) $this->total_usd * (float) $this->exchange_rate;
+        return $this->total * (float) $this->exchange_rate;
     }
 
     private static function nextNumber(): string
