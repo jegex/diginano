@@ -20,4 +20,14 @@ enum OrderStatus: string
             self::Cancelled => 'Dibatalkan',
         };
     }
+
+    public function isAwaitingConfirmation(): bool
+    {
+        return $this === self::AwaitingConfirmation;
+    }
+
+    public function isTerminal(): bool
+    {
+        return in_array($this, [self::Completed, self::Cancelled, self::Expired], true);
+    }
 }
