@@ -27,6 +27,7 @@ class PlanFactory extends Factory
             'price' => fake()->randomFloat(2, 5, 200),
             'billing_period' => null,
             'licenses_per_unit' => 1,
+            'activation_limit' => 1,
         ];
     }
 

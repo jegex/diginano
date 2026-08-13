@@ -54,6 +54,22 @@ class Product extends Model
     }
 
     /**
+     * @return HasMany<ProductRelease, $this>
+     */
+    public function releases(): HasMany
+    {
+        return $this->hasMany(ProductRelease::class);
+    }
+
+    /**
+     * The most recently published release for the product, if any.
+     */
+    public function latestRelease(): ?ProductRelease
+    {
+        return $this->releases()->latest('id')->first();
+    }
+
+    /**
      * @param  Builder<Product>  $query
      */
     public function scopePublished(Builder $query): Builder
